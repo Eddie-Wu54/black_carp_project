@@ -1,3 +1,13 @@
+#' This script:
+#' 
+#' 1. Extracts the average weekly water temperature data (for 27 years) from the
+#' global water temperature model for all 12 GREAT LAKES tributary locations.
+#' 
+#' 2. Calculate the average throughout the Years.
+#' 
+#' 3. Export the weekly average water temperature for each location separately.
+
+
 library(raster)
 library(ncdf4)
 library(sp)
@@ -40,8 +50,8 @@ M.weeklyWater <- weeklyWater - 273.15
 
 ## Create two data frames to store the average water temperature data and
 ## the standard deviation for each week of the year (1979-2005)
-week.avg <- matrix(NA, 6, 52)
-week.me <- matrix(NA, 6, 52)
+week.avg <- matrix(NA, 12, 52)
+week.me <- matrix(NA, 12, 52)
 confidence_level <- 0.95
 
 # Use two for loops to calculate the average for each week over 27 years
@@ -56,7 +66,7 @@ for (i in 1:52) { # i index which week
   # Calculate the mean
   week.avg[,i] <- rowSums(subset)/27
   # Calculate the margin of error (for confidence interval)
-  for (y in 1:6) { # y index each location
+  for (y in 1:12) { # y index each location
     standard_error <- sd(subset[y,]) / sqrt(27)
     week.me[y,i] <- abs(qnorm((1 - confidence_level) / 2)) * standard_error
   }
@@ -136,6 +146,71 @@ colnames(genesee.mod) <- c("weeks", "temperature.avg", "temperature.me",
 
 write.csv(genesee.mod, "water temperature clean/genesee_model.csv")
 
+
+## Big Breek River ##
+big.creek.mod <- as.data.frame(t(rbind(time, week.avg[7,], week.me[7,])))
+
+big.creek.mod <- cbind(big.creek.mod, big.creek.mod$V2 - big.creek.mod$V3)
+big.creek.mod <- cbind(big.creek.mod, big.creek.mod$V2 + big.creek.mod$V3)
+colnames(big.creek.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                           "lower.CI", "upper.CI")
+
+write.csv(big.creek.mod, "water temperature clean/bigcreek_model.csv")
+
+
+## Big Otter Creek ##
+big.otter.mod <- as.data.frame(t(rbind(time, week.avg[8,], week.me[8,])))
+
+big.otter.mod <- cbind(big.otter.mod, big.otter.mod$V2 - big.otter.mod$V3)
+big.otter.mod <- cbind(big.otter.mod, big.otter.mod$V2 + big.otter.mod$V3)
+colnames(big.otter.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                           "lower.CI", "upper.CI")
+
+write.csv(big.otter.mod, "water temperature clean/bigotter_model.csv")
+
+
+## Still River ##
+still.mod <- as.data.frame(t(rbind(time, week.avg[9,], week.me[9,])))
+
+still.mod <- cbind(still.mod, still.mod$V2 - still.mod$V3)
+still.mod <- cbind(still.mod, still.mod$V2 + still.mod$V3)
+colnames(still.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                           "lower.CI", "upper.CI")
+
+write.csv(still.mod, "water temperature clean/still_model.csv")
+
+
+## Mississagi River ##
+mississagi.mod <- as.data.frame(t(rbind(time, week.avg[10,], week.me[10,])))
+
+mississagi.mod <- cbind(mississagi.mod, mississagi.mod$V2 - mississagi.mod$V3)
+mississagi.mod <- cbind(mississagi.mod, mississagi.mod$V2 + mississagi.mod$V3)
+colnames(mississagi.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                           "lower.CI", "upper.CI")
+
+write.csv(mississagi.mod, "water temperature clean/mississagi_model.csv")
+
+
+## Nipigon River ##
+nipigon.mod <- as.data.frame(t(rbind(time, week.avg[11,], week.me[11,])))
+
+nipigon.mod <- cbind(nipigon.mod, nipigon.mod$V2 - nipigon.mod$V3)
+nipigon.mod <- cbind(nipigon.mod, nipigon.mod$V2 + nipigon.mod$V3)
+colnames(nipigon.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                              "lower.CI", "upper.CI")
+
+write.csv(nipigon.mod, "water temperature clean/nipigon_model.csv")
+
+
+## Humber River ##
+humber.mod <- as.data.frame(t(rbind(time, week.avg[12,], week.me[12,])))
+
+humber.mod <- cbind(humber.mod, humber.mod$V2 - humber.mod$V3)
+humber.mod <- cbind(humber.mod, humber.mod$V2 + humber.mod$V3)
+colnames(humber.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                              "lower.CI", "upper.CI")
+
+write.csv(humber.mod, "water temperature clean/humber_model.csv")
 
 
 
