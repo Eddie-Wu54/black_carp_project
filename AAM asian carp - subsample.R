@@ -1,5 +1,10 @@
 #' This script is used to conduct individual and grouped species regression for
-#' all Asian carp species. Spatial autocorrelation is avoided using subsampling.
+#' all Asian carp species. We use sub-sampling to determine
+#' 
+#' 1. if for each species (or combined), the slope is significantly different between
+#'    artificial and natural conditions.
+#' 
+#' 2. if the results for asian carp are similiar to that of black carp.
 
 library(dplyr)
 library(ggplot2)
@@ -60,6 +65,7 @@ AIC(asian.mod)
 AIC(asian.linear)
 AIC(asian)
 
+
 ## Create a matrix to store the results over the sub-sampling
 results.raw <- matrix(NA,100,6)
 colnames(results.raw) <- c("slope.artificial", "intercept.artificial", 
@@ -81,7 +87,7 @@ for(i in 1:nrow(results.raw)) {
   results.raw[i,2]<-values$coef[1,1] # intercept for artificial
   results.raw[i,3]<-values$coef[2,1] + values$coef[4,1] # slope for natural
   results.raw[i,4]<-values$coef[1,1] + values$coef[3,1] # intercept for natural
-  results.raw[i,5]<-values$coef[2,4] # p value
+  results.raw[i,5]<-values$coef[2,4] # p value for the AAM ~ temp relationship
   results.raw[i,6]<-values$adj.r.squared # R2
 }
 
@@ -95,7 +101,7 @@ results.final[1,6] <- mean(unique(results.raw[,"R^2"]))
 # Count the number of times when p value is greater than 0.05
 results.final[1,5] <- sum(results.raw[,"p value"] > 0.05)
 
-
+summary(reg)
 
 ## Plot the two lines
 # Create two functions corresponding to the lines
@@ -211,5 +217,8 @@ results.final[3,6] <- mean(unique(results.raw[,"R^2"]))
 # Count the number of times when p value is greater than 0.05
 results.final[3,5] <- sum(results.raw[,"p value"] > 0.05)
 
+
+
+#### Sub-sampling for black carp ####
 
 
