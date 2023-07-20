@@ -88,4 +88,5 @@ str(Latitude)
 
 new <- as.data.frame(cbind(loc.name, Latitude, Longitude))
 head(new)
-write.csv(new, file = "new.csv")
+write.csv(new, file = "new location coordinates.csv")
+
