@@ -15,8 +15,8 @@ ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,An
 53,Bighead,5.5,North_China,calculated,artificial,pond,AF,K,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
 55,Grass,5.5,North_China,calculated,artificial,pond,AF,AG,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
 54,Black,7.5,North_China,calculated,,,AF,V,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-56,Silver,4.5,North_China,calculated,both (Korunuma 1968),both,AF,BT,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-57,Bighead,6.5,NorthE_China,calculated,?,"two sources, one from pond, one still try to find the original references",AG,L,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
+56,Silver,4.5,North_China,calculated,artificial,both,AF,BT,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
+57,Bighead,6.5,NorthE_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",AG,L,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
 58,Black,8,NorthE_China,calculated,,,AG,W,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
 59,Grass,6.5,NorthE_China,calculated,artificial,pond,AG,AH,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
 60,Silver,5.5,NorthE_China,calculated,artificial,pond,AG,BU,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
@@ -35,12 +35,12 @@ ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,An
 86,Black,4.333,Yangtze,calculated,,,AP,AB,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
 30,Silver,2,Guangxi,calculated,na,na,B,BP,24.222,109.1671,20.7,28.1,11.8,7758.178977,5936.445022,4182.824984
 67,Silver,3,South_China,calculated,natural,river,B,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-67,Silver,2.833,South_China,calculated,both (Korunuma 1968),both,B,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+67,Silver,2.833,South_China,calculated,artificial,both,B,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
 29,Silver,3,Guangdong,calculated,na,na,B,BP,22.5981,112.5323,22.4,28.3,15.1,8446.224349,6620.673836,4808.795802
 66,Grass,3.5,South_China,calculated,natural,river,B,AO,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
 66,Grass,3.5,South_China,calculated,artificial,pond,B,AO,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
 71,Grass,4,Sunchow,specific,natural,river,B,AO,23.3925,110.0814,20.8,27.3,12.8,8300.741581,6474.930037,4673.424971
-65,Bighead,3.5,South_China,calculated,?,"two sources, one from pond, one still try to find the original references",B,N,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+65,Bighead,3.5,South_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",B,N,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
 50,Bighead,10,Moscow,specific,artificial,fish farm,C,J,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
 15,Grass,8.5,Cen_Russia,calculated,artificial,fish farm,C,AP,55.2882,41.1226,4.6,17.8,-9.3,2849.362526,1800.881605,967.6340904
 51,Grass,10,Moscow,specific,artificial,fish farm,C,AP,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
@@ -57,7 +57,7 @@ ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,An
 43,Black,8.5,Leninskoye,specific,,,G,U,47.9297,132.6499,1.9,20.1,-19.3,3079.462148,2074.114758,1235.688509
 45,Grass,8.5,Low_Amur,calculated,natural,river,G,AT,48.0073,133.0803,1.6,19.9,-19.7,2979.814027,1985.386442,1166.177139
 44,Grass,9.5,Leninskoye,specific,natural,river,G,AT,47.9297,132.6499,1.9,20.1,-19.3,3079.462148,2074.114758,1235.688509
-63,Bighead,6,Romania,calculated,?,pond (requested),H,M,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
+63,Bighead,6,Romania,calculated,artificial,pond (requested),H,M,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
 61,Black,4,Nucet_farm,specific,,,H,X,44.8,25.55,10.1,20.2,-1.2,4168.379654,2740.732606,1602.78818
 64,Grass,6.5,Romania,calculated,na,na,H,AU,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
 1,Grass,3,Alabama,calculated,na,na,I,AV,32.3508,-87.0124,18.2,27,9.1,6932.939344,5148.685472,3512.437469
@@ -69,15 +69,15 @@ ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,An
 11,Grass,3.5,Balyktchy ,calculated,artificial,fish farm,M,AZ,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
 12,Silver,3.5,Balyktchy fish farm; vicinity of Tashkent,calculated,artificial,farm,M,BK,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
 10,Bighead,4.5,Balyktchy ,calculated,artificial,fish farm,M,B,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
-14,Silver,4.5,Cen_China,calculated,both (Korunuma 1968),both,N,BL,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
-13,Bighead,4.5,Cen_China,calculated,?,"two sources, one from pond, one still try to find the original references",N,C,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
+14,Silver,4.5,Cen_China,calculated,na,na,N,BL,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
+13,Bighead,4.5,Cen_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",N,C,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
 17,Black,6,CenE_China,calculated,,,O,R,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
 19,Silver,3.5,CenE_China,calculated,artificial,pond,O,BM,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
 18,Grass,4.5,CenE_China,calculated,artificial,pond,O,BA,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
 16,Bighead,5,CenE_China,calculated,artificial,pond,O,D,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
 20,Grass,4,CenSouth_China,calculated,na,na,P,BB,25.7597,111.1713,16.9,26.1,6.8,6424.524932,4658.664045,3104.196636
 21,Grass,3.5,CenSouth_Russia,calculated,artificial,pond,Q,BC,53.2293,43.4146,4.7,18.6,-9.8,2951.964856,1909.823588,1061.735868
-22,Silver,2,Cuba,calculated,?,?,R,BN,21.5079,-77.8094,25.3,27.4,22.5,9515.247063,7689.104206,5862.961348
+22,Silver,2,Cuba,calculated,na,waterbodies,R,BN,21.5079,-77.8094,25.3,27.4,22.5,9515.247063,7689.104206,5862.961348
 24,Grass,3,Cuttack,specific,artificial,pond,S,BD,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
 25,Silver,3,Cuttack,specific,artificial,pond,S,BO,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
 23,Bighead,3,Cuttack,specific,artificial,pond,S,E,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
@@ -90,4 +90,3 @@ ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,An
 42,Grass,4.75,Krasnodar,specific,artificial,pond,Z,BH,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
 41,Bighead,4.5,Krasnodar,specific,natural,river,Z,H,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
 41,Bighead,5,Krasnodar,specific,artificial,fish farm,Z,H,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
-,,,,,,,,,,,,,,,,

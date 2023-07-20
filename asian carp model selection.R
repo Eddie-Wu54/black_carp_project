@@ -1,7 +1,8 @@
 #' This script is used to compare the difference models for Asian carp AAM under
 #' two different conditions. We use:
 #' 
-#' 1. linear addictive model  2. Interaction model
+#' 1. Linear addictive model  2. Interaction model
+#' 3. Simple linear model  4. ??? midel
 #' 
 #' on:
 #' 
@@ -47,6 +48,8 @@ autoplot(asian.linear)
 plot(asian.linear, which = 5)
 
 
+
+
 ## Interaction models (ANCOVA: different slope, different intercept)
 asian.int <- lm(log(AAM)~ColdTemp*Condition, data = asian.carp.clean)
 anova(asian.int)
@@ -79,13 +82,25 @@ influential
 
 #### Black carp ####
 
-Black.clean <- Black %>% filter(!row_number() == 15) %>% filter(sex != "male")
+Black.clean <- Black %>% filter(!row_number() == 15) %>% filter(sex != "male") %>% 
+  filter(!condition == "na")
 
 Black.clean <- Black.clean[Black.clean$AAM != 11,]
+Black.clean <- Black.clean[Black.clean$AAM != 4,]
+Black.clean <- Black.clean[Black.clean$location != "Heilong Jiang"]
+
+
+## Simple linear model (same slope, same intercept)
+black.simple <- lm(log(AAM)~AnnualTemp, data = Black.clean)
+anova(black.simple)
+summary(black.simple)
+autoplot(black.simple) # did not meet??
+
+plot(black.simple, which = 5)
+
 
 ## Linear addictive models (same slope, different intercept)
-
-black.linear <- lm(log(AAM)~ColdTemp+condition, data = Black.clean)
+black.linear <- lm(log(AAM)~AnnualTemp+condition, data = Black.clean)
 anova(black.linear)
 summary(black.linear)
 autoplot(black.linear)
@@ -93,8 +108,13 @@ autoplot(black.linear)
 plot(black.linear, which = 5)
 
 
-## Interaction models (ANCOVA: different slope, different intercept)
-black.int <- lm(log(AAM)~ColdTemp*condition, data = Black.clean)
+## Interaction model (different slope, same intercept)
+black.int <- lm(log(AAM)~AnnualTemp:condition, data = Black.clean)
+summary(black)
+
+
+## Grouped-specific models (ANCOVA: different slope, different intercept)
+black.group <- lm(log(AAM)~AnnualTemp*condition, data = Black.clean)
 anova(black.int)
 summary(black.int)
 autoplot(black.int)
@@ -102,23 +122,11 @@ autoplot(black.int)
 plot(black.int, which = 5)
 
 
-## Simple linear model (same slope, same intercept)
-
-black.simple <- lm(log(AAM)~ColdTemp, data = Black.clean)
-anova(black.simple)
-summary(black.simple)
-autoplot(black.simple) # did not meet??
-
-plot(black.simple, which = 5)
-
-black <- lm(log(AAM)~ColdTemp:condition, data = Black.clean)
-summary(black)
 ## Compare the AIC scores
-AIC(black.linear)
-AIC(black.int)
-AIC(black.simple)
-AIC(black)
-
+AIC(black.simple, black.linear, black.int, black.group)
+    
+    
+## Outlier check
 hist(log(Black.clean$AAM))
 mean(log(Black.clean$AAM)) + 3 * sd(log(Black.clean$AAM))
 sd(log(Black.clean$AAM))
@@ -164,7 +172,7 @@ AIC(grass.simple)
 
 
 
-#### Grass carp ####
+#### Bighead and Silver carp ####
 
 Big.sil.clean <- Big.sil %>% 
   filter(Condition %in% c("natural", "artificial"))
