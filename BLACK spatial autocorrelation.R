@@ -1,13 +1,18 @@
 #' This script is used to examine the spatial auto-correlation between
-#' the test locations. Both global moran's I and local moran's I are used.
+#' the test locations. Both global moran's I and local moran's I (correlog plots)
+#' are used.
 
 
+library(gstat)
+library(ggplot2)
 library(dplyr)
 library(spdep)
 library(sp)
 library(nlme)
 library(ape)
 library(MuMIn)
+library(raster)
+library(ncf) # for the correlog function
 
 
 #### Import data ####
@@ -23,36 +28,184 @@ carp.r <- carp %>%
 str(carp.r)
 
 
-#### Global moran's test ####
+## Download one file to get the spatial points
+# (this defines what projection to use when converting to spatial objects)
+tmin.1979 <- brick("cpc/tmin.1979.nc", varname = "tmin")
+tmin.1979 <- rotate(tmin.1979)
 
-## Create a distance matrix
-geo <- as.matrix(cbind(carp.r$latitude, carp.r$longtitude))
-samples.dist <- as.matrix(spDists(geo, longlat = TRUE)) # dist() and spDists() produces same outcomes
-samples.dist.inv <- 1/samples.dist
-diag(samples.dist.inv) <- 0
+
+
+#### Global moran's test (entire dataset) ####
+
+## Make spatial dataframe
+coords <- data.frame("long"=location[,3],"lat"=location[,2])
+df <- data.frame(a = 1:nrow(location[3]))
+spatial.data <- SpatialPointsDataFrame(coords,df,proj4string = tmin.1979@crs)
+
+# Get a distance matrix from all points
+dists <- spDists(spatial.data, longlat = TRUE)
+
 
 ## Examine the spatial autocorrelation on regression residuals
 
 # Get residuals from whole dataset for each variable (use log AAM)
 lm.annual <- lm(log(carp.r$AAM)~carp.r$AnnualTemp) # Annual temperature
 lm.cold <- lm(log(carp.r$AAM)~carp.r$ColdTemp) # Cold temperature
+lm.warm <- lm(log(carp.r$AAM)~carp.r$WarmTemp) # Warm temperature
 lm.gdd <- lm(log(carp.r$AAM)~carp.r$average_gdd_0) # Growing degree day
 summary(lm.annual)
 summary(lm.cold)
 summary(lm.gdd)
 
 # Run the Moran.I test on the residuals
-Moran.annual <- Moran.I(lm.annual$residuals, samples.dist.inv)
-Moran.cold <- Moran.I(lm.cold$residuals, samples.dist.inv)
-Moran.gdd <- Moran.I(lm.gdd$residuals, samples.dist.inv)
+Moran.annual <- Moran.I(lm.annual$residuals, dists)
+Moran.cold <- Moran.I(lm.cold$residuals, dists)
+Moran.gdd <- Moran.I(lm.gdd$residuals, dists)
 
 Moran.annual
 Moran.cold
 Moran.gdd
 
+summary(lm.annual)
+summary(lm.cold)
+summary(lm.warm) # no significant relationship there
 
 
-#### Local moran's test ####
+
+#### Local moran's test (correlog plot) ####
+
+## For annual temperature
+png("annual residuals corr.png", width= 2404, height= 1600, units="px", res = 300)
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(coords$long, coords$lat, lm.annual$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Annual Average Temperature Regression Residuals")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+dev.off()
+
+
+## For cold temperature
+png("cold residuals corr.png", width= 2404, height= 1600, units="px", res = 300)
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(coords$long, coords$lat, lm.cold$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Cold Quarter Temperature Regression Residuals")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+dev.off()
+
+
+
+#### Variogram ####
+
+## Create a data frame to store the necessary information
+vario.data <- data.frame(residuals = lm.annual$residuals,
+                         x = coords$long, y = coords$lat)
+
+
+# Turn them to spatial points
+geo.spatial<-SpatialPoints(coords, proj4string = tmin.1979@crs)
+
+# OR
+
+# Use another method for turning them into spatial object
+spdf <- SpatialPointsDataFrame(coords = coords, data = vario.data,
+                               proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+
+
+## Variogram
+vario <- variogram(vario.data$residuals~1, data = geo.spatial)
+vario
+plot(vario)
+
+# Fit a model
+lzn.fit <- fit.variogram(vario, model=vgm(1, "Sph", 900, 1)) # fit model
+plot(vario, lzn.fit) # plot the sample values, along with the fit model
+
+
+
+#### Subsample at 250 km  ####
+
+#' Two sets of autocorrelating points:
+#' 
+#' 1. Central China, Hongze Lake
+#' 2. Ganjiang, Hukou, Pingjiang
+
+
+## Now we want to check the spatial autocorrelation before and after we subsample
+## for ONLY the Chinese Mainland region
+
+# Get the data for chinese mainland
+carp.china <- carp.r[carp.r$china.mainland == "y",]
+
+
+## Make spatial dataframe
+china.coords <- data.frame("long"=carp.china[,11],"lat"=carp.china[,10])
+df <- data.frame(a = 1:nrow(carp.china[11]))
+spatial.data <- SpatialPointsDataFrame(china.coords,df,proj4string = tmin.1979@crs)
+
+# Get a distance matrix from all points
+dists <- spDists(spatial.data, longlat = TRUE)
+
+## Create a matrix to store the results over the sub-sampling
+results.raw <- matrix(NA,100,4)
+colnames(results.raw) <- c("slope", "intercept",
+                           "p value", "R^2")
+
+## Sub-sample
+table(carp.r$spatial.code.250)
+
+# Sub-sample and run regression for 1000 times
+
+
+#annual####
+moran.annual<-matrix(NA,1000,1)
+
+for(i in 1:nrow(moran.annual)){
+  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub <- lm(log(sub$AAM)~sub$AnnualTemp)
+  
+  coords.sub <- data.frame("long"=sub[,11],"lat"=sub[,10])
+  df.sub = data.frame(a = 1:nrow(sub[11]))
+  spatial.data.sub <- SpatialPointsDataFrame(coords.sub,df.sub,proj4string = tmin.1979@crs)
+  
+  dists.sub <- spDists(spatial.data.sub, longlat = TRUE)
+  diag(dists.sub) <- 0 
+  
+  moran.annual[i,1]<- Moran.I(reg.sub$residuals,dists.sub)$p.value
+}
+
+
+hist(moran.annual[,1])
+sum(moran.annual[,1]<0.05)
+#percent not significant
+100-(sum(moran.annual[,1]<0.05)/1000)*100
+
+
+
+
+
+
+## Some weird codes
 
 # Create a data frame of the coordinates and AAM data
 data.spatial <- data.frame(data = carp.r$AAM,
@@ -67,10 +220,10 @@ geo <- as.matrix(cbind(carp.r$longtitude, carp.r$latitude))
 
 
 ## Find the nearest neighbor distance for each location
-nearest_distances <- apply(samples.dist, 1, function(row) min(row[row > 0]))
+nearest_distances <- apply(dists, 1, function(row) min(row[row > 0]))
 nearest_distances
 
-threshold <- nearest_distances[18]
+threshold <- nearest_distances[14]
 # The threshold value is the minimum distance that gives each point
 # at least one neighbor.
 
@@ -101,14 +254,3 @@ summary(Lmoran.annual, geo)
 
 # See the p value for the 20 locations
 hist(Lmoran.annual[,5])
-
-
-
-
-
-
-columbus <- st_read(system.file("shapes/columbus.shp", package="spData")[1], quiet=TRUE)
-col.gal.nb <- read.gal(system.file("weights/columbus.gal", package="spData")[1])
-coords <- coordinates(as(columbus, "Spatial"))
-cards <- card(col.gal.nb)
-col.w <- nb2listw(col.gal.nb)
