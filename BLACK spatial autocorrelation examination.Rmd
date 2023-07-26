@@ -1,0 +1,180 @@
+---
+title: "Spatial autocorrelation"
+author: "Eddie Wu"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to test the spatial autocorrelation in our black carp data file, and try to find the best distance that reduces the spatial autocorrelation when doing subsampling. In this file, we:
+
+1. Use moran's I test to test the global spatial autocorrelation in our dataset.
+
+2. Use the correlog plots to examine how spatial autocorrelation changes with distances.
+
+3. Use the variogram to further test point 2.
+
+4. Subsample.
+
+
+
+```{r library, warning=FALSE, message=FALSE}
+library(gstat)
+library(ggplot2)
+library(dplyr)
+library(spdep)
+library(sp)
+library(nlme)
+library(ape)
+library(MuMIn)
+library(raster)
+library(ncf)
+library(knitr)
+```
+
+```{r data import}
+## Import location data
+location <- read.csv("location_no_temps.csv")
+location <- unique(location) # remove duplicating locations
+
+# Clean the data
+carp <- read.csv("eddie_carp_new.csv")
+carp.r <- carp %>% 
+  filter(sex != "male") %>% # keep the non-male data points
+  distinct(location, .keep_all = TRUE) # remove all repeating locations
+
+## Download one file to get the spatial points
+# (this defines what projection to use when converting to spatial objects)
+tmin.1979 <- brick("cpc/tmin.1979.nc", varname = "tmin")
+tmin.1979<-rotate(tmin.1979)
+```
+
+
+## Calculate the residuals from the linear model
+
+```{r model}
+# Define the model
+lm.annual <- lm(log(carp.r$AAM)~carp.r$AnnualTemp) # Annual temperature
+lm.cold <- lm(log(carp.r$AAM)~carp.r$ColdTemp) # Cold temperature
+lm.warm <- lm(log(carp.r$AAM)~carp.r$WarmTemp) # Warm temperature
+
+# See the results
+summary(lm.annual)
+summary(lm.cold)
+summary(lm.warm)
+```
+
+
+
+## Global spatial autocorrelation
+
+```{r global}
+## Make spatial dataframe
+coords <- data.frame("long"=location[,3],"lat"=location[,2])
+df <- data.frame(a = 1:nrow(location[3]))
+spatial.data <- SpatialPointsDataFrame(coords,df,proj4string = tmin.1979@crs)
+
+# Get a distance matrix from all points
+dists <- spDists(spatial.data, longlat = TRUE)
+
+## Run the Moran.I test on the residuals
+Moran.annual <- Moran.I(lm.annual$residuals, dists)
+Moran.cold <- Moran.I(lm.cold$residuals, dists)
+
+global.moran <- data.frame(
+  Model = c("Moran.annual", "Moran.cold"),
+  Observed = c(Moran.annual$observed, Moran.cold$observed),
+  Expected = c(Moran.annual$expected, Moran.cold$expected),
+  sd = c(Moran.annual$sd, Moran.cold$sd),
+  p.value = c(Moran.annual$p.value, Moran.cold$p.value)
+)
+
+kable(global.moran)
+```
+
+There is no global spatial autocorrelation for the entire dataset.
+
+
+## Correlog plots - local spatial autocorrelation
+
+```{r correlog}
+## Annual temperature
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(coords$long, coords$lat, lm.annual$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Annual Average Temperature Regression Residuals")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+
+
+## Cold temperature
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(coords$long, coords$lat, lm.cold$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Cold Quarter Temperature Regression Residuals")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+```
+
+In general, the correlog plots suggest that for both temperature, 600 km is a good distance to reduce local spatial autocorrelation.
+
+
+## Variogram
+
+```{r variogram}
+## Create a data frame to store the necessary information
+vario.data <- data.frame(residuals = lm.annual$residuals,
+                         x = coords$long, y = coords$lat)
+
+# Turn them to spatial points using our projection
+geo.spatial<-SpatialPoints(coords, proj4string = tmin.1979@crs)
+
+
+## Variogram
+vario <- variogram(vario.data$residuals~1, data = geo.spatial)
+plot(vario)
+```
+
+
+If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 location points.
+
+If we pick 500 km as the cutoff distance for sub-sampling, we would have only 13 location points.
+
+
+## Subsampling examination
+
+
+
+
+
+
+
+
+
+
+
+
+
