@@ -5,12 +5,16 @@
 #' 3. Calculate the Root Mean Square Error (RMSE) between the predicted value and
 #' the observed value.
 
+
 library(ggplot2)
 library(dplyr)
 
 
 WT <- read.csv("water temperature clean/water_temperature_final_clean.csv",
                stringsAsFactors = TRUE)
+
+WT$year <- as.factor(WT$year)
+str(WT)
 
 
 
@@ -25,15 +29,33 @@ st.louis.pred <- read.csv("water temperature clean/st_louis_model.csv")
 
 ## Plotting
 ggplot(st.louis.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(st.louis.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(st.louis.field, mapping = aes(x = weeks, y = temp, color = year))+
+  scale_colour_hue()+
   theme_bw()
 
 
 ## Calculate the Root Mean Square Error (RMSE)
-sqrt(mean((st.louis.field$temp - st.louis.pred$temperature.avg)^2))
+# Remove the observations from non-complete years
+st.louis.field.c <- st.louis.field[st.louis.field$complete == 1,]
+
+# Get the unique levels of the "year" variable
+unique_year <- unique(st.louis.field.c$year)
+unique_year
+
+# Create a vector list to store the results
+rmse_list <- vector("numeric", 0)
+
+# Loop through each level and calculate the RMSE
+for (year.number in unique_year) {
+  sub <- subset(st.louis.field.c, year == year.number) # create subsets
+  value <- sqrt(mean((sub$temp - st.louis.pred$temperature.avg)^2))
+  rmse_list[year.number] <- value
+}
+
+rmse_list
 
 
 
@@ -51,21 +73,39 @@ fox.pred <- read.csv("water temperature clean/fox_model.csv")
 
 ## Plotting
 ggplot(fox.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(fox.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(fox.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
+
 ## Calculate the Root Mean Square Error (RMSE)
-sqrt(mean((fox.field$temp - fox.pred$temperature.avg)^2))
+# Remove the observations from non-complete years
+fox.field.c <- fox.field[fox.field$complete == 1,]
+
+# Get the unique levels of the "year" variable
+unique_year <- unique(fox.field.c$year)
+unique_year
+
+# Create a vector list to store the results
+rmse_list <- vector("numeric", 0)
+
+# Loop through each level and calculate the RMSE
+for (year.number in unique_year) {
+  sub <- subset(fox.field.c, year == year.number) # create subsets
+  value <- sqrt(mean((sub$temp - fox.pred$temperature.avg)^2))
+  rmse_list[year.number] <- value
+}
+
+rmse_list
 
 
 
 #### Portage-Burns Waterways ####
 
 # observed values
-pb.field <- WT %>% filter(river == "portage burns")
+pb.field <- WT %>% filter(river == "portage")
 str(pb.field)
 
 # predicted values
@@ -73,14 +113,31 @@ pb.pred <- read.csv("water temperature clean/pb_model.csv")
 
 ## Plotting
 ggplot(pb.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(pb.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(pb.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
+
 ## Calculate the Root Mean Square Error (RMSE)
-sqrt(mean((pb.field$temp - pb.pred$temperature.avg)^2))
+#' All the years are complete for pb
+
+# Get the unique levels of the "year" variable
+unique_year <- unique(pb.field$year)
+unique_year
+
+# Create a vector list to store the results
+rmse_list <- vector("numeric", 0)
+
+# Loop through each level and calculate the RMSE
+for (year.number in unique_year) {
+  sub <- subset(pb.field, year == year.number) # create subsets
+  value <- sqrt(mean((sub$temp - pb.pred$temperature.avg)^2))
+  rmse_list[year.number] <- value
+}
+
+rmse_list
 
 
 
@@ -95,14 +152,31 @@ vermilion.pred <- read.csv("water temperature clean/vermilion_model.csv")
 
 ## Plotting
 ggplot(vermilion.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(vermilion.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(vermilion.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
+
 ## Calculate the Root Mean Square Error (RMSE)
-sqrt(mean((vermilion.field$temp - vermilion.pred$temperature.avg)^2))
+#' All years complete for vermilion
+
+# Get the unique levels of the "year" variable
+unique_year <- unique(vermilion.field$year)
+unique_year
+
+# Create a vector list to store the results
+rmse_list <- vector("numeric", 0)
+
+# Loop through each level and calculate the RMSE
+for (year.number in unique_year) {
+  sub <- subset(vermilion.field, year == year.number) # create subsets
+  value <- sqrt(mean((sub$temp - vermilion.pred$temperature.avg)^2))
+  rmse_list[year.number] <- value
+}
+
+rmse_list
 
 
 
@@ -117,21 +191,38 @@ genesee.pred <- read.csv("water temperature clean/genesee_model.csv")
 
 ## Plotting
 ggplot(genesee.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(genesee.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(genesee.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
+
 ## Calculate the Root Mean Square Error (RMSE)
-sqrt(mean((genesee.field$temp - genesee.pred$temperature.avg)^2))
+#' All years complete for genesee
+
+# Get the unique levels of the "year" variable
+unique_year <- unique(genesee.field$year)
+unique_year
+
+# Create a vector list to store the results
+rmse_list <- vector("numeric", 0)
+
+# Loop through each level and calculate the RMSE
+for (year.number in unique_year) {
+  sub <- subset(genesee.field, year == year.number) # create subsets
+  value <- sqrt(mean((sub$temp - genesee.pred$temperature.avg)^2))
+  rmse_list[year.number] <- value
+}
+
+rmse_list
 
 
 
 #### Big Creek River ####
 
 # observed values
-big.creek.field <- WT %>% filter(river == "bigcreek")
+big.creek.field <- WT %>% filter(river == "big creek")
 str(big.creek.field)
 
 # predicted values
@@ -140,10 +231,10 @@ big.creek.pred <- read.csv("water temperature clean/bigcreek_model.csv")
 
 ## Plotting
 ggplot(big.creek.pred, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  geom_point(big.creek.field, mapping = aes(x = weeks, y = temp), color = "red")+
+  geom_line(size = 1.5)+
+  geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(big.creek.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
 
