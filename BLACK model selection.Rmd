@@ -1,0 +1,572 @@
+---
+title: "Black/Asian carp model selection"
+author: "Eddie Wu"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to show the progress on black carp and asian carp temperature and condition analyses. Since sub-sampling from spatial autocorrelation does not give significantly different results from normal analysis for black carp, we present the results without sub-sampling here. For other asian carp species, we still subsample.
+
+For each species, we have four different models:
+
+1. Simple linear model (same slope, same intercept)
+2. Linear additive model (same slope, different intercept)
+3. Interaction model (different slope, same intercept)
+4. Group-specific model (different slope, different intercept)
+
+And we consider two temperature metrics:
+
+1. Annual temperature
+2. Winter temperature (temperature from the coldest quarter)
+
+
+```{r data import, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(ggfortify)
+library(dplyr)
+library(knitr)
+
+## Import data
+asian.carp <- read.csv("asian carp final.csv")
+asian.carp$Condition <- as.factor(asian.carp$Condition)
+
+Black <- read.csv("eddie_carp_new.csv")
+Black$condition <- as.factor(Black$condition)
+
+## Separate by species
+Grass <- asian.carp[asian.carp$Species=="Grass",]
+Bighead <- asian.carp[asian.carp$Species=="Bighead",]
+Silver <- asian.carp[asian.carp$Species=="Silver",]
+Big.sil <- rbind(Bighead, Silver) # combine the two groups
+
+```
+
+
+## Black carp
+
+For black carp data, we do not subsample since sub-sampling at 250 km does not reduce our moran's I.
+
+### Using annual temperature
+```{r black carp annual temp}
+# Clean data
+black.clean <- Black %>% filter(!row_number() == 5) %>% filter(sex != "male")
+
+# Build the models
+black.simple <- lm(log(AAM)~AnnualTemp, data = black.clean)
+black.linear <- lm(log(AAM)~AnnualTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~AnnualTemp:condition, data = black.clean)
+black.group <- lm(log(AAM)~AnnualTemp*condition, data = black.clean)
+
+# Compare the AICs
+AIC(black.simple, black.linear, black.int, black.group)
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(summary(black.simple)$r.squared, summary(black.linear)$r.squared,
+          summary(black.int)$r.squared, summary(black.group)$r.squared)
+)
+kable(r_2)
+```
+
+
+### Using cold temperature
+```{r black carp cold temp}
+# Build the models
+black.simple <- lm(log(AAM)~ColdTemp, data = black.clean)
+black.linear <- lm(log(AAM)~ColdTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~ColdTemp:condition, data = black.clean)
+black.group <- lm(log(AAM)~ColdTemp*condition, data = black.clean)
+
+# Compare the AICs
+AIC(black.simple, black.linear, black.int, black.group)
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(summary(black.simple)$r.squared, summary(black.linear)$r.squared,
+          summary(black.int)$r.squared, summary(black.group)$r.squared)
+)
+kable(r_2)
+```
+
+
+We separated the black carp dataset into two based on conditions. Since there was no preference over the four models, we used the simple linear model on each set of the data.
+
+### Black carp graphs with two conditions separated
+``` {r black carp graphs}
+## Annual temperature
+ggplot(black.clean, aes(x = AnnualTemp, y = log(AAM), color = condition))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  labs(title = "Mean annual Temperature")
+
+
+## Cold temperature
+ggplot(black.clean, aes(x = ColdTemp, y = log(AAM), color = condition))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  labs(title = "Cold Quarter Temperature")
+```
+
+
+Now that we have seen that the artificial condition data seems to have a larger spread, we would like to run the simple linear model to take a look.
+
+```{r blak carp conditions}
+## Separate into two data sets
+black.natural <- black.clean[black.clean$condition == "natural",]
+black.artificial <- black.clean[black.clean$condition == "artificial",]
+
+
+## Run the models
+black.annual.n <- lm(log(AAM)~AnnualTemp, data = black.natural)
+black.cold.n <- lm(log(AAM)~ColdTemp, data = black.natural)
+
+black.annual.a <- lm(log(AAM)~AnnualTemp, data = black.artificial)
+black.cold.a <- lm(log(AAM)~ColdTemp, data = black.artificial)
+
+
+## Compare the AIC scores
+AIC(black.annual.n, black.annual.a) #for annual temperature
+AIC(black.cold.n, black.cold.a) #for cold temperature
+
+
+## Compare the model parameters
+summary(black.annual.n)
+summary(black.annual.a)
+summary(black.cold.n)
+summary(black.cold.a)
+```
+
+It turned put that after separating out the artificial condition, the model performed much better. While the artificial model alone did not even have a significant relationship.
+
+
+## Asian carp
+
+### Using annual temperature
+```{r asian carp annual temp}
+## Look at the spatial codes for the current asian carp data
+asian.carp.clean <- asian.carp %>% 
+  filter(Condition %in% c("natural", "artificial"))
+
+table(asian.carp.clean$Code)
+
+
+## Simple linear model
+asian.linear.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp, data = sub)
+  asian.linear.results[i,1]<-as.numeric(AIC(reg))
+  asian.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+asian.add.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
+  asian.add.results[i,1]<-as.numeric(AIC(reg))
+  asian.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+asian.int.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
+  asian.int.results[i,1]<-as.numeric(AIC(reg))
+  asian.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+asian.group.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  asian.group.results[i,1]<-as.numeric(AIC(reg))
+  asian.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Compare the AIC results
+mean(unique(asian.linear.results[,1]))
+mean(unique(asian.add.results[,1]))
+mean(unique(asian.int.results[,1]))
+mean(unique(asian.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(asian.linear.results[,2])),
+         mean(unique(asian.add.results[,2])),
+         mean(unique(asian.int.results[,2])),
+         mean(unique(asian.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* No preference among all four models.
+
+
+### Using cold temperature
+```{r asian carp cold temp}
+## Simple linear model
+asian.linear.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp, data = sub)
+  asian.linear.results[i,1]<-as.numeric(AIC(reg))
+  asian.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+asian.add.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp+Condition, data = sub)
+  asian.add.results[i,1]<-as.numeric(AIC(reg))
+  asian.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+asian.int.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp:Condition, data = sub)
+  asian.int.results[i,1]<-as.numeric(AIC(reg))
+  asian.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+asian.group.results <- matrix(NA,1000,2)
+for(i in 1:1000){
+  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  asian.group.results[i,1]<-as.numeric(AIC(reg))
+  asian.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Compare the AIC results
+mean(unique(asian.linear.results[,1]))
+mean(unique(asian.add.results[,1]))
+mean(unique(asian.int.results[,1]))
+mean(unique(asian.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(asian.linear.results[,2])),
+         mean(unique(asian.add.results[,2])),
+         mean(unique(asian.int.results[,2])),
+         mean(unique(asian.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* Same conclusion when using the cold temperature. But using annual temperature seems to have a better model as explained by lower AIC values.
+
+
+## Grass carp
+
+### Using annual temperature
+```{r grass carp annual temp}
+Grass.clean <- Grass %>% 
+  filter(Condition %in% c("natural", "artificial"))
+
+table(Grass.clean$Code)
+
+
+## Simple linear model
+grass.linear.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp, data = sub)
+  grass.linear.results[i,1]<-as.numeric(AIC(reg))
+  grass.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+grass.add.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
+  grass.add.results[i,1]<-as.numeric(AIC(reg))
+  grass.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+grass.int.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
+  grass.int.results[i,1]<-as.numeric(AIC(reg))
+  grass.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+grass.group.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  grass.group.results[i,1]<-as.numeric(AIC(reg))
+  grass.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+## Compare the AIC scores
+mean(unique(grass.linear.results[,1]))
+mean(unique(grass.add.results[,1]))
+mean(unique(grass.int.results[,1]))
+mean(unique(grass.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(grass.linear.results[,2])),
+         mean(unique(grass.add.results[,2])),
+         mean(unique(grass.int.results[,2])),
+         mean(unique(grass.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* No preferences.
+
+
+### Using cold temperature
+```{r grass carp cold temp}
+## Simple linear model
+grass.linear.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp, data = sub)
+  grass.linear.results[i,1]<-as.numeric(AIC(reg))
+  grass.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+grass.add.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp+Condition, data = sub)
+  grass.add.results[i,1]<-as.numeric(AIC(reg))
+  grass.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+grass.int.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp:Condition, data = sub)
+  grass.int.results[i,1]<-as.numeric(AIC(reg))
+  grass.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+grass.group.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  grass.group.results[i,1]<-as.numeric(AIC(reg))
+  grass.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+## Compare the AIC scores
+mean(unique(grass.linear.results[,1]))
+mean(unique(grass.add.results[,1]))
+mean(unique(grass.int.results[,1]))
+mean(unique(grass.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(grass.linear.results[,2])),
+         mean(unique(grass.add.results[,2])),
+         mean(unique(grass.int.results[,2])),
+         mean(unique(grass.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* No preference over the four models.
+
+* While models using cold temperature does not show any significant differences compared to using annual temperature (AICs <= 2).  
+
+
+
+## Bighead and silver carp
+
+### Using annual temperature
+```{r bighead silver carp annual temp}
+Big.sil.clean <- Big.sil %>% 
+  filter(Condition %in% c("natural", "artificial"))
+
+table(Big.sil.clean$Code)
+
+
+## Simple linear model
+bs.linear.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp, data = sub)
+  bs.linear.results[i,1]<-as.numeric(AIC(reg))
+  bs.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+bs.add.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
+  bs.add.results[i,1]<-as.numeric(AIC(reg))
+  bs.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+bs.int.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
+  bs.int.results[i,1]<-as.numeric(AIC(reg))
+  bs.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+bs.group.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  bs.group.results[i,1]<-as.numeric(AIC(reg))
+  bs.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+## Compare the AIC scores
+mean(unique(bs.linear.results[,1]))
+mean(unique(bs.add.results[,1]))
+mean(unique(bs.int.results[,1]))
+mean(unique(bs.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(bs.linear.results[,2])),
+         mean(unique(bs.add.results[,2])),
+         mean(unique(bs.int.results[,2])),
+         mean(unique(bs.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* For bighead and silver carp using annual air temperature, the simple linear model works the best. Although there does not seem to be much difference among the models.
+
+
+### Using cold temperature
+```{r bighead silver carp cold temp}
+## Simple linear model
+bs.linear.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp, data = sub)
+  bs.linear.results[i,1]<-as.numeric(AIC(reg))
+  bs.linear.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Linear addictive models (same slope, different intercept)
+bs.add.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp+Condition, data = sub)
+  bs.add.results[i,1]<-as.numeric(AIC(reg))
+  bs.add.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Interaction models (different slope, same intercept)
+bs.int.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp:Condition, data = sub)
+  bs.int.results[i,1]<-as.numeric(AIC(reg))
+  bs.int.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+
+## Grouped-specific model (different slope, different intercept)
+bs.group.results <- matrix(NA,100,2)
+for(i in 1:100){
+  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  reg <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  bs.group.results[i,1]<-as.numeric(AIC(reg))
+  bs.group.results[i,2]<-summary(reg)$adj.r.squared
+}
+
+## Compare the AIC scores
+mean(unique(bs.linear.results[,1]))
+mean(unique(bs.add.results[,1]))
+mean(unique(bs.int.results[,1]))
+mean(unique(bs.group.results[,1]))
+
+# R^2 value for the four models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
+  R2 = c(mean(unique(bs.linear.results[,2])),
+         mean(unique(bs.add.results[,2])),
+         mean(unique(bs.int.results[,2])),
+         mean(unique(bs.group.results[,2])))
+)
+kable(r_2)
+```
+
+
+* Same conclusion as annual temperature. Annual temperature fits better models (significant differences compared to using cold temperature).
+
+* $R^2$ seems to be much lower.
+
+
+
+
+
+* Linear additive model.
+
+* Improved $R^2$ values.
+
+
+## Concluding points
+
+* For all the other asian carp species, the simple linear model seems to be the best fit. Besides, using cold temperature and annual temperature does not produce different results.
+
+* For black carp, the linear additive model (*same slope, different intercept*) seems to be a better fit. Using cold temperature on the original data suggests that the interaction model is the best (probably because the winter temperature at these two locations are very similar.)
+
+* After removing the two data points, we see that the linear additive model still seems to be a better fit. Besides, greatly improved $R^2$ value suggests better fit.
+
+
