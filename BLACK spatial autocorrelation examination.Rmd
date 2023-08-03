@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This .Rmd file is to test the spatial autocorrelation in our black carp data file, and try to find the best distance that reduces the spatial autocorrelation when doing subsampling. In this file, we:
 
+1. Show the distribution of our data points on a map.
+
 1. Use moran's I test to test the global spatial autocorrelation in our dataset.
 
 2. Use the correlog plots to examine how spatial autocorrelation changes with distances.
@@ -35,6 +37,8 @@ library(MuMIn)
 library(raster)
 library(ncf)
 library(knitr)
+library(rnaturalearth)
+library(sf)
 ```
 
 ```{r data import}
@@ -52,6 +56,25 @@ carp.r <- carp %>%
 # (this defines what projection to use when converting to spatial objects)
 tmin.1979 <- brick("cpc/tmin.1979.nc", varname = "tmin")
 tmin.1979<-rotate(tmin.1979)
+```
+
+
+## Data distribution
+
+```{r distribution}
+## Get the world data
+world <- ne_countries(scale = "small", returnclass = "sf")
+
+## Plots (global plot)
+world %>% 
+  filter(admin != "Antarctica") %>%
+  # remove antarctica
+  ggplot()+
+  geom_sf()+
+  geom_point(aes(x=Longitude, y=Latitude), data = location,
+             size = 1, color = "darkred")+
+  theme_bw()+
+  xlab("Longitude") + ylab("Latitude")
 ```
 
 
@@ -164,17 +187,135 @@ If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 loca
 If we pick 500 km as the cutoff distance for sub-sampling, we would have only 13 location points.
 
 
-## Subsampling examination
+## Subsampling examination (at 250km)
+
+Here, we try to sub-sample at 250km and check the local moran's I (correlog plot) and slope/intercept after sub-sampling.
+
+### Local moran's I - annual
+
+```{r subsample local moran annual, fig.width=14, fig.height=12, results='hide'}
+table(carp.r$spatial.code.250)
+
+par(mfrow = c(5, 2))
+par(mar=c(1,1,1,1))
+
+## Check the local moran's results after sub-sampling
+for (i in 1:10){
+  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$AnnualTemp)
+  test <- correlog(sub$longtitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
+}
+```
 
 
+### Local moran's I - cold
+
+```{r subsample local moran cold, fig.width=14, fig.height=12, results='hide'}
+table(carp.r$spatial.code.250)
+
+par(mfrow = c(5, 2))
+par(mar=c(1,1,1,1))
+
+## Check the local moran's results after sub-sampling
+for (i in 1:10){
+  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
+  test <- correlog(sub$longtitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
+}
+```
 
 
+### Slope and intercept - annual
+
+```{r subsample slope and intercept annual}
+## Create a matrix to store the results over the sub-sampling
+results.raw <- matrix(NA,10,4)
+colnames(results.raw) <- c("slope", "intercept", "p value", "R^2")
+
+results.final.annual <- matrix(NA,2,4)
+colnames(results.final.annual) <- c("slope", "intercept", "p value", "R^2")
+rownames(results.final.annual) <- c("sub-sampling at 250km", "no sub-sampling")
 
 
+## Sub-sample and run regression for 10 times
+for(i in 1:nrow(results.raw)) {
+  # sub-sample by location
+  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  # run regression
+  reg <- lm(log(sub$AAM)~sub$AnnualTemp)
+  values <- summary(reg)
+  results.raw[i,1]<-values$coef[2,1] # slope for artificial
+  results.raw[i,2]<-values$coef[1,1] # intercept for artificial
+  results.raw[i,3]<-values$coef[2,4] # p value for the AAM ~ temp relationship
+  results.raw[i,4]<-values$adj.r.squared # R2
+}
+
+# Take the mean of only the unique possibilities for slope, intercept, R2
+results.final.annual[1,1] <- mean(unique(results.raw[,"slope"]))
+results.final.annual[1,2] <- mean(unique(results.raw[,"intercept"]))
+results.final.annual[1,4] <- mean(unique(results.raw[,"R^2"]))
+
+# Count the number of times when p value is greater than 0.05
+results.final.annual[1,3] <- sum(results.raw[,"p value"] > 0.05)
+
+## Compare to without sub-sampling
+results.final.annual[2,1] <- summary(lm.annual)$coef[2,1]
+results.final.annual[2,2] <- summary(lm.annual)$coef[1,1]
+results.final.annual[2,3] <- summary(lm.annual)$coef[2,4]
+results.final.annual[2,4] <- summary(lm.annual)$adj.r.squared
+
+results.final.annual
+```
 
 
+### Slope and intercept - cold
 
+```{r subsample slope and intercept cold}
+## Create a matrix to store the results over the sub-sampling
+results.raw <- matrix(NA,10,4)
+colnames(results.raw) <- c("slope", "intercept", "p value", "R^2")
 
+results.final.cold <- matrix(NA,2,4)
+colnames(results.final.cold) <- c("slope", "intercept", "p value", "R^2")
+rownames(results.final.cold) <- c("sub-sampling at 250km", "no sub-sampling")
+
+## Sub-sample and run regression for 10 times
+for(i in 1:nrow(results.raw)) {
+  # sub-sample by location
+  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  # run regression
+  reg <- lm(log(sub$AAM)~sub$ColdTemp)
+  values <- summary(reg)
+  results.raw[i,1]<-values$coef[2,1] # slope for artificial
+  results.raw[i,2]<-values$coef[1,1] # intercept for artificial
+  results.raw[i,3]<-values$coef[2,4] # p value for the AAM ~ temp relationship
+  results.raw[i,4]<-values$adj.r.squared # R2
+}
+
+# Take the mean of only the unique possibilities for slope, intercept, R2
+results.final.cold[1,1] <- mean(unique(results.raw[,"slope"]))
+results.final.cold[1,2] <- mean(unique(results.raw[,"intercept"]))
+results.final.cold[1,4] <- mean(unique(results.raw[,"R^2"]))
+
+# Count the number of times when p value is greater than 0.05
+results.final.cold[1,3] <- sum(results.raw[,"p value"] > 0.05)
+
+## Compare to without sub-sampling
+results.final.cold[2,1] <- summary(lm.cold)$coef[2,1]
+results.final.cold[2,2] <- summary(lm.cold)$coef[1,1]
+results.final.cold[2,3] <- summary(lm.cold)$coef[2,4]
+results.final.cold[2,4] <- summary(lm.cold)$adj.r.squared
+
+results.final.cold
+```
+
+For both annual temperature and cold temperature, the slope, intercept and R^2 value before and after subsampling is not significantly different from each other.
 
 
 
