@@ -32,6 +32,8 @@ ggplot(st.louis.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(st.louis.field, mapping = aes(x = weeks, y = temp, color = year))+
   scale_colour_hue()+
   theme_bw()
@@ -76,6 +78,8 @@ ggplot(fox.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(fox.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -116,6 +120,8 @@ ggplot(pb.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(pb.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -155,6 +161,8 @@ ggplot(vermilion.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(vermilion.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -194,6 +202,8 @@ ggplot(genesee.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(genesee.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -234,6 +244,8 @@ ggplot(big.creek.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(big.creek.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -276,6 +288,8 @@ ggplot(big.otter.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(big.otter.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -318,6 +332,8 @@ ggplot(still.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(still.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -360,6 +376,8 @@ ggplot(mississagi.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(mississagi.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -402,6 +420,8 @@ ggplot(nipigon.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(nipigon.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
@@ -444,6 +464,8 @@ ggplot(humber.pred, aes(x = weeks, y = temperature.avg))+
   geom_line(size = 1.5)+
   geom_line(aes(x = weeks, y = lower.CI), size = 1, alpha = 0.5)+
   geom_line(aes(x = weeks, y = upper.CI), size = 1, alpha = 0.5)+
+  geom_line(aes(x = weeks, y = max), size = 1, alpha = 0.4, color = "blue")+
+  geom_line(aes(x = weeks, y = min), size = 1, alpha = 0.4, color = "blue")+
   geom_line(humber.field, mapping = aes(x = weeks, y = temp, color = year))+
   theme_bw()
 
