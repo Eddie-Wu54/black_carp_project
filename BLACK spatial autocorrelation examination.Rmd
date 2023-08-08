@@ -21,7 +21,11 @@ This .Rmd file is to test the spatial autocorrelation in our black carp data fil
 
 3. Use the variogram to further test point 2.
 
-4. Subsample.
+4. Subsample at 250 km and 550 km, and check the local moran's I after sub-sampling to see if spatial autocorrelation has been reduced.
+
+5. Conduct laditudinal stratification analysis.
+
+6. Look at the Chinese dataset - 17 data points.
 
 
 
@@ -123,7 +127,7 @@ kable(global.moran)
 There is no global spatial autocorrelation for the entire dataset.
 
 
-## Correlog plots - local spatial autocorrelation
+## Local spatial autocorrelation
 
 ```{r correlog}
 ## Annual temperature
@@ -187,13 +191,13 @@ If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 loca
 If we pick 500 km as the cutoff distance for sub-sampling, we would have only 13 location points.
 
 
-## Subsampling examination (at 250km)
+## Subsampling at 250km
 
-Here, we try to sub-sample at 250km and check the local moran's I (correlog plot) and slope/intercept after sub-sampling.
+Here, we try to sub-sample at 250km and check the local moran's I (correlog plot) after sub-sampling.
 
-### Local moran's I - annual
+### Local moran's I - annual 250
 
-```{r subsample local moran annual, fig.width=14, fig.height=12, results='hide'}
+```{r subsample local moran annual 250, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.250)
 
 par(mfrow = c(5, 2))
@@ -202,8 +206,8 @@ par(mar=c(1,1,1,1))
 ## Check the local moran's results after sub-sampling
 for (i in 1:10){
   sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
-  reg.sub.cold <- lm(log(sub$AAM)~sub$AnnualTemp)
-  test <- correlog(sub$longtitude, sub$latitude, reg.sub.cold$residuals,
+  reg.sub.annual <- lm(log(sub$AAM)~sub$AnnualTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.annual$residuals,
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
@@ -211,9 +215,9 @@ for (i in 1:10){
 ```
 
 
-### Local moran's I - cold
+### Local moran's I - cold 250
 
-```{r subsample local moran cold, fig.width=14, fig.height=12, results='hide'}
+```{r subsample local moran cold 250, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.250)
 
 par(mfrow = c(5, 2))
@@ -223,7 +227,7 @@ par(mar=c(1,1,1,1))
 for (i in 1:10){
   sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
   reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
-  test <- correlog(sub$longtitude, sub$latitude, reg.sub.cold$residuals,
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.cold$residuals,
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
@@ -231,91 +235,185 @@ for (i in 1:10){
 ```
 
 
-### Slope and intercept - annual
-
-```{r subsample slope and intercept annual}
-## Create a matrix to store the results over the sub-sampling
-results.raw <- matrix(NA,10,4)
-colnames(results.raw) <- c("slope", "intercept", "p value", "R^2")
-
-results.final.annual <- matrix(NA,2,4)
-colnames(results.final.annual) <- c("slope", "intercept", "p value", "R^2")
-rownames(results.final.annual) <- c("sub-sampling at 250km", "no sub-sampling")
+Subsampling at 250 km does not reduce the spatial autocorrelation in our dataset.
 
 
-## Sub-sample and run regression for 10 times
-for(i in 1:nrow(results.raw)) {
-  # sub-sample by location
-  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
-  # run regression
-  reg <- lm(log(sub$AAM)~sub$AnnualTemp)
-  values <- summary(reg)
-  results.raw[i,1]<-values$coef[2,1] # slope for artificial
-  results.raw[i,2]<-values$coef[1,1] # intercept for artificial
-  results.raw[i,3]<-values$coef[2,4] # p value for the AAM ~ temp relationship
-  results.raw[i,4]<-values$adj.r.squared # R2
+
+## Subsampling at 550km
+
+Now, we try to subsample at a larger distance - 550km.
+
+### Local moran's I - annual 550
+
+```{r subsample local moran annual 550, fig.width=14, fig.height=12, results='hide'}
+table(carp.r$spatial.code.550)
+
+par(mfrow = c(5, 2))
+par(mar=c(1,1,1,1))
+
+## Check the local moran's results after sub-sampling
+for (i in 1:10){
+  sub <- carp.r %>% group_by(spatial.code.550) %>% sample_n(size=1)
+  reg.sub.annual <- lm(log(sub$AAM)~sub$AnnualTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.annual$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
 }
-
-# Take the mean of only the unique possibilities for slope, intercept, R2
-results.final.annual[1,1] <- mean(unique(results.raw[,"slope"]))
-results.final.annual[1,2] <- mean(unique(results.raw[,"intercept"]))
-results.final.annual[1,4] <- mean(unique(results.raw[,"R^2"]))
-
-# Count the number of times when p value is greater than 0.05
-results.final.annual[1,3] <- sum(results.raw[,"p value"] > 0.05)
-
-## Compare to without sub-sampling
-results.final.annual[2,1] <- summary(lm.annual)$coef[2,1]
-results.final.annual[2,2] <- summary(lm.annual)$coef[1,1]
-results.final.annual[2,3] <- summary(lm.annual)$coef[2,4]
-results.final.annual[2,4] <- summary(lm.annual)$adj.r.squared
-
-results.final.annual
 ```
 
 
-### Slope and intercept - cold
+### Local moran's I - cold 550
 
-```{r subsample slope and intercept cold}
-## Create a matrix to store the results over the sub-sampling
-results.raw <- matrix(NA,10,4)
-colnames(results.raw) <- c("slope", "intercept", "p value", "R^2")
+```{r subsample local moran cold 550, fig.width=14, fig.height=12, results='hide'}
+table(carp.r$spatial.code.550)
 
-results.final.cold <- matrix(NA,2,4)
-colnames(results.final.cold) <- c("slope", "intercept", "p value", "R^2")
-rownames(results.final.cold) <- c("sub-sampling at 250km", "no sub-sampling")
+par(mfrow = c(5, 2))
+par(mar=c(1,1,1,1))
 
-## Sub-sample and run regression for 10 times
-for(i in 1:nrow(results.raw)) {
-  # sub-sample by location
-  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
-  # run regression
-  reg <- lm(log(sub$AAM)~sub$ColdTemp)
-  values <- summary(reg)
-  results.raw[i,1]<-values$coef[2,1] # slope for artificial
-  results.raw[i,2]<-values$coef[1,1] # intercept for artificial
-  results.raw[i,3]<-values$coef[2,4] # p value for the AAM ~ temp relationship
-  results.raw[i,4]<-values$adj.r.squared # R2
+## Check the local moran's results after sub-sampling
+for (i in 1:10){
+  sub <- carp.r %>% group_by(spatial.code.550) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
 }
-
-# Take the mean of only the unique possibilities for slope, intercept, R2
-results.final.cold[1,1] <- mean(unique(results.raw[,"slope"]))
-results.final.cold[1,2] <- mean(unique(results.raw[,"intercept"]))
-results.final.cold[1,4] <- mean(unique(results.raw[,"R^2"]))
-
-# Count the number of times when p value is greater than 0.05
-results.final.cold[1,3] <- sum(results.raw[,"p value"] > 0.05)
-
-## Compare to without sub-sampling
-results.final.cold[2,1] <- summary(lm.cold)$coef[2,1]
-results.final.cold[2,2] <- summary(lm.cold)$coef[1,1]
-results.final.cold[2,3] <- summary(lm.cold)$coef[2,4]
-results.final.cold[2,4] <- summary(lm.cold)$adj.r.squared
-
-results.final.cold
 ```
 
-For both annual temperature and cold temperature, the slope, intercept and R^2 value before and after subsampling is not significantly different from each other.
+We have seen that subsampling at 550 km would largely reduce the spatial autocorrelation in our dataset at low distances, even though we are only left with 12 data points.
 
 
 
+## Latitudinal stratification
+
+
+
+## China Dataset analyses
+
+Now let's look at the datapoints in China. There are 17 datapoints.
+
+```{r china distribution}
+## Subset the Chinese dataset
+black.china <- carp.r[carp.r$china == "y",]
+
+## Get the world data
+world <- ne_countries(scale = "small", returnclass = "sf")
+
+## Plots (china plot)
+world %>% 
+  filter(admin == "China" | admin =="Taiwan") %>%
+  # select only China
+  ggplot()+
+  geom_sf()+
+  geom_point(aes(x=longitude, y=latitude), data = black.china,
+             size = 2, color = "darkred")+
+  theme_bw()+
+  xlab("Longitude") + ylab("Latitude")
+```
+
+Note that the datapoint outside of the Chinese region is "Northern China". It is calculated through geographical center.
+
+### Global moran's I
+
+```{r global china}
+# Run the models
+lm.annual.china <- lm(log(AAM)~AnnualTemp, data = black.china)
+summary(lm.annual.china)
+lm.cold.china <- lm(log(AAM)~ColdTemp, data = black.china)
+summary(lm.cold.china)
+
+## Make spatial dataframe
+coords <- data.frame("long"=black.china[,14],"lat"=black.china[,13])
+df <- data.frame(a = 1:nrow(black.china[14]))
+spatial.data <- SpatialPointsDataFrame(coords,df,proj4string = tmin.1979@crs)
+
+# Get a distance matrix from all points
+dists <- spDists(spatial.data, longlat = TRUE)
+
+## Run the Moran.I test on the residuals
+Moran.annual <- Moran.I(lm.annual.china$residuals, dists)
+Moran.cold <- Moran.I(lm.cold.china$residuals, dists)
+
+global.moran <- data.frame(
+  Model = c("Moran.annual", "Moran.cold"),
+  Observed = c(Moran.annual$observed, Moran.cold$observed),
+  Expected = c(Moran.annual$expected, Moran.cold$expected),
+  sd = c(Moran.annual$sd, Moran.cold$sd),
+  p.value = c(Moran.annual$p.value, Moran.cold$p.value)
+)
+
+kable(global.moran)
+```
+
+No global spatial autocorrelation in the Chinese dataset.
+
+### Local moran's I - correlog
+
+```{r correlog china}
+## Annual temperature
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(black.china$longitude,
+                 black.china$latitude, lm.annual.china$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test,
+     main="Annual Average Temperature Regression Residuals for Chinese data")
+abline(h=0)
+# Reduce the distance range to 1500 km
+plot(test, main="", xlim=c(0,1500))
+abline(h=0)
+
+
+## Cold temperature
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+# Use the coorelog function to develop the relationship
+test <- correlog(black.china$longitude, 
+                 black.china$latitude, lm.cold.china$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test,
+     main="Cold Quarter Temperature Regression Residuals for Chinese data")
+abline(h=0)
+
+# Reduce the distance range to 1500 km
+plot(test, main="", xlim=c(0,1500))
+abline(h=0)
+```
+
+### Subsample at 250km for Chinese dataset
+
+Now we subsample at 250km to reduce spatial autocorrelation.
+
+```{r china sub 250, fig.width=14, fig.height=12, results='hide'}
+table(black.china$spatial.code.250)
+
+## Annual temperature
+par(mfrow=c(5,2), mar=c(1,1,2,2))
+for (i in 1:10){
+  sub <- black.china %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub.annual <- lm(log(sub$AAM)~sub$AnnualTemp)
+  
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.annual$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,1500))
+  abline(h=0)
+}
+
+## Cold temperature
+par(mfrow=c(5,2), mar=c(1,1,2,2))
+for (i in 1:10){
+  sub <- black.china %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
+  
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,1500))
+  abline(h=0)
+}
+```
