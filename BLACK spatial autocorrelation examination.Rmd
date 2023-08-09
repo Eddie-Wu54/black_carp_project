@@ -188,7 +188,7 @@ plot(vario)
 
 If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 location points.
 
-If we pick 500 km as the cutoff distance for sub-sampling, we would have only 13 location points.
+If we pick 550 km as the cutoff distance for sub-sampling, we would have only 12 location points.
 
 
 ## Subsampling at 250km
@@ -198,6 +198,10 @@ Here, we try to sub-sample at 250km and check the local moran's I (correlog plot
 ### Local moran's I - annual 250
 
 ```{r subsample local moran annual 250, fig.width=14, fig.height=12, results='hide'}
+# Store the r2 values
+r2.250.raw <- matrix(NA,10, 2)
+colnames(r2.250.raw) <- c("annual","cold")
+
 table(carp.r$spatial.code.250)
 
 par(mfrow = c(5, 2))
@@ -211,6 +215,7 @@ for (i in 1:10){
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
+  r2.250.raw[i,1] <- summary(reg.sub.annual)$adj.r.squared #get the r2
 }
 ```
 
@@ -231,6 +236,7 @@ for (i in 1:10){
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
+  r2.250.raw[i,2] <- summary(reg.sub.cold)$adj.r.squared #get the r2
 }
 ```
 
@@ -248,6 +254,10 @@ Now, we try to subsample at a larger distance - 550km.
 ```{r subsample local moran annual 550, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.550)
 
+# Store the r2 values
+r2.550.raw <- matrix(NA,10, 2)
+colnames(r2.550.raw) <- c("annual","cold")
+
 par(mfrow = c(5, 2))
 par(mar=c(1,1,1,1))
 
@@ -259,6 +269,7 @@ for (i in 1:10){
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
+  r2.550.raw[i,1] <- summary(reg.sub.annual)$adj.r.squared #get the r2
 }
 ```
 
@@ -279,10 +290,27 @@ for (i in 1:10){
                    increment=50, resamp=500, latlon=T)
   plot(test, main="", xlim=c(0,2500))
   abline(h=0)
+  r2.550.raw[i,2] <- summary(reg.sub.cold)$adj.r.squared #get the r2
 }
 ```
 
 We have seen that subsampling at 550 km would largely reduce the spatial autocorrelation in our dataset at low distances, even though we are only left with 12 data points.
+
+
+## Compare the r2 values
+
+```{r compare r2}
+r2 <- data.frame(
+  Time = c("Original", "Sub 250","Sub 550"),
+  Annual = c(summary(lm.annual)$adj.r.squared, mean(unique(r2.250.raw[,1])),
+             mean(unique(r2.550.raw[,1]))),
+  Cold = c(summary(lm.cold)$adj.r.squared, mean(unique(r2.250.raw[,2])),
+           mean(unique(r2.550.raw[,2])))
+)
+kable(r2)
+```
+
+However, subsampling at 550 km would reduce our R2 value as well.
 
 
 
