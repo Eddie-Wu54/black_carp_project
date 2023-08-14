@@ -20,12 +20,10 @@ library(ncf) # for the correlog function
 location <- read.csv("location_no_temps.csv")
 location <- unique(location) # remove duplicating locations
 
-# Clean the data
+# Import and clean the data
 carp <- read.csv("eddie_carp_new.csv")
-carp.r <- carp %>% 
-  filter(sex != "male") %>% # keep only the female data points
-  distinct(location, .keep_all = TRUE) # remove all repeating locations
-str(carp.r)
+carp$condition <- as.factor(carp$condition)
+carp.r <- carp %>% filter(!row_number() == 5) %>% filter(sex != "male")
 
 
 ## Download one file to get the spatial points
@@ -121,7 +119,6 @@ dev.off()
 vario.data <- data.frame(residuals = lm.annual$residuals,
                          x = coords$long, y = coords$lat)
 
-
 # Turn them to spatial points
 geo.spatial<-SpatialPoints(coords, proj4string = tmin.1979@crs)
 
@@ -143,62 +140,29 @@ plot(vario, lzn.fit) # plot the sample values, along with the fit model
 
 
 
-#### Subsample at 250 km  ####
 
-#' Two sets of autocorrelating points:
-#' 
-#' 1. Central China, Hongze Lake
-#' 2. Ganjiang, Hukou, Pingjiang
+#### Local moran's I after removing the SU data point ####
+carp.r.c <- carp.r %>% filter(!row_number() == 20)
 
+## For annual temperature
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+lm.cold <- lm(log(carp.r.c$AAM)~carp.r.c$ColdTemp)
 
-## Now we want to check the spatial autocorrelation before and after we subsample
-## for ONLY the Chinese Mainland region
+# Use the coorelog function to develop the relationship
+test <- correlog(carp.r.c$longitude, carp.r.c$latitude, lm.cold$residuals,
+                 increment=50, resamp=500, latlon=T)
 
-# Get the data for chinese mainland
-carp.china <- carp.r[carp.r$china.mainland == "y",]
+# Plot with the entire distance range
+plot(test, main="Cold Quarter Temperature Regression Residuals - Removal")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
 
-
-## Make spatial dataframe
-china.coords <- data.frame("long"=carp.china[,11],"lat"=carp.china[,10])
-df <- data.frame(a = 1:nrow(carp.china[11]))
-spatial.data <- SpatialPointsDataFrame(china.coords,df,proj4string = tmin.1979@crs)
-
-# Get a distance matrix from all points
-dists <- spDists(spatial.data, longlat = TRUE)
-
-## Create a matrix to store the results over the sub-sampling
-results.raw <- matrix(NA,100,4)
-colnames(results.raw) <- c("slope", "intercept",
-                           "p value", "R^2")
-
-## Sub-sample
-table(carp.r$spatial.code.250)
-
-# Sub-sample and run regression for 1000 times
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
 
 
-#annual####
-moran.annual<-matrix(NA,1000,1)
-
-for(i in 1:nrow(moran.annual)){
-  sub <- carp.r %>% group_by(spatial.code.250) %>% sample_n(size=1)
-  reg.sub <- lm(log(sub$AAM)~sub$AnnualTemp)
-  
-  coords.sub <- data.frame("long"=sub[,11],"lat"=sub[,10])
-  df.sub = data.frame(a = 1:nrow(sub[11]))
-  spatial.data.sub <- SpatialPointsDataFrame(coords.sub,df.sub,proj4string = tmin.1979@crs)
-  
-  dists.sub <- spDists(spatial.data.sub, longlat = TRUE)
-  diag(dists.sub) <- 0 
-  
-  moran.annual[i,1]<- Moran.I(reg.sub$residuals,dists.sub)$p.value
-}
-
-
-hist(moran.annual[,1])
-sum(moran.annual[,1]<0.05)
-#percent not significant
-100-(sum(moran.annual[,1]<0.05)/1000)*100
 
 
 
