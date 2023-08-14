@@ -137,6 +137,30 @@ r2 <- data.frame(
            mean(unique(r2.550.raw[,2])))
 )
 
+
+
+#### ENTIRE DATASET: Latitude stratification ####
+
+table(carp.r$lat.one) # 18 points
+
+png("cold residuals corr lat one.png", width= 4808, height= 4000, units="px", res = 300)
+par(mfrow = c(5,2))
+par(mar=c(1,1,1,1))
+
+## Check the local moran's results after sub-sampling
+for (i in 1:10){
+  sub <- carp.r.c %>% group_by(spatial.code.250) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,3000))
+  abline(h=0)
+}
+
+dev.off()
+
+
+
 #### CHINA DATASET: no subsampling at all ####
 
 # Run the models
