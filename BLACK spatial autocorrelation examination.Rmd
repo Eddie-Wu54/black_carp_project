@@ -23,7 +23,7 @@ This .Rmd file is to test the spatial autocorrelation in our black carp data fil
 
 4. Subsample at 250 km and 550 km, and check the local moran's I after sub-sampling to see if spatial autocorrelation has been reduced.
 
-5. Conduct laditudinal stratification analysis.
+5. Conduct latitudinal stratification analysis.
 
 6. Look at the Chinese dataset - 17 data points.
 
@@ -191,6 +191,7 @@ If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 loca
 If we pick 550 km as the cutoff distance for sub-sampling, we would have only 12 location points.
 
 
+
 ## Subsampling at 250km
 
 Here, we try to sub-sample at 250km and check the local moran's I (correlog plot) after sub-sampling.
@@ -279,7 +280,7 @@ for (i in 1:10){
 ```{r subsample local moran cold 550, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.550)
 
-par(mfrow = c(5, 2))
+par(mfrow = c(5,2))
 par(mar=c(1,1,1,1))
 
 ## Check the local moran's results after sub-sampling
@@ -310,11 +311,116 @@ r2 <- data.frame(
 kable(r2)
 ```
 
-However, subsampling at 550 km would reduce our R2 value as well.
+However, subsampling at 550 km would reduce our R2 value as well, suggesting that the model would not fit for the sub-dataset.
 
 
 
 ## Latitudinal stratification
+
+Now we would like to explore if stratified sub-sampling using latitude would reduce our spatial autocorrelation at low distances.
+
+### one degree latitude bin - annual
+
+```{r latitude one annual, fig.width=14, fig.height=12, results='hide'}
+
+table(carp.r$lat.one)
+
+par(mfrow = c(5,2))
+par(mar=c(1,1,1,1))
+
+for (i in 1:10){
+  sub <- carp.r %>% group_by(lat.one) %>% sample_n(size=1)
+  reg.sub.annual <- lm(log(sub$AAM)~sub$AnnualTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.annual$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
+}
+
+dev.off()
+```
+
+### one degree latitude bin - cold
+
+```{r latitude one cold, fig.width=14, fig.height=12, results='hide'}
+
+table(carp.r$lat.one)
+
+par(mfrow = c(5,2))
+par(mar=c(1,1,1,1))
+
+for (i in 1:10){
+  sub <- carp.r %>% group_by(lat.one) %>% sample_n(size=1)
+  reg.sub.cold <- lm(log(sub$AAM)~sub$ColdTemp)
+  test <- correlog(sub$longitude, sub$latitude, reg.sub.cold$residuals,
+                   increment=50, resamp=500, latlon=T)
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
+}
+
+dev.off()
+```
+
+* For some subsamples, the negative autocorrelation at 550 km is reduced.
+
+* It seems that the South Ukarine data point is the main cause that we have negative spatial autocorrelation at around 550 km. Therefore, we ought to remove this datapoint from our analyses.
+
+
+
+## Local moran's I without the South Ukarine data point
+
+Now we would like to re-examine the local spatial autocorrelation with the South Ukarine data point removed.
+
+### Remove the data point and construct the local moran's I
+
+```{r SU removal model}
+# Remove the data point for South Ukarine
+carp.new <- carp.r[carp.r$location != "South Ukraine",]
+
+# Define the model
+lm.annual <- lm(log(carp.new$AAM)~carp.new$AnnualTemp) # Annual temperature
+lm.cold <- lm(log(carp.new$AAM)~carp.new$ColdTemp) # Cold temperature
+
+# See the results
+summary(lm.annual)
+summary(lm.cold)
+
+
+## Local moran's I - Annual temperature
+par(mfrow=c(2,1),mar=c(2,2,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(carp.new$longitude, carp.new$latitude, lm.annual$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Annual Average Temperature Regression Residuals - Removal")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+
+
+## Local moran's I - Cold temperature
+par(mfrow=c(2,1),mar=c(2,2,2,2))
+
+# Use the coorelog function to develop the relationship
+test <- correlog(carp.new$longitude, carp.new$latitude, lm.cold$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Cold Quarter Temperature Regression Residuals - Removal")
+abline(h=0)
+text(17400, min(test$correlation)+1, "A", cex=1.5)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+text(2500, min(test$correlation)+1, "B", cex=1.5)
+```
 
 
 
@@ -377,6 +483,7 @@ kable(global.moran)
 
 No global spatial autocorrelation in the Chinese dataset.
 
+
 ### Local moran's I - correlog
 
 ```{r correlog china}
@@ -414,6 +521,7 @@ plot(test, main="", xlim=c(0,1500))
 abline(h=0)
 ```
 
+
 ### Subsample at 250km for Chinese dataset
 
 Now we subsample at 250km to reduce spatial autocorrelation.
@@ -445,3 +553,15 @@ for (i in 1:10){
   abline(h=0)
 }
 ```
+
+
+
+## Conclusions
+
+* There was no global spatial autocorrelation in the entire dataset, but when looking at local clustering, we saw a strong negative autocorrelation at around 550 km.
+
+* We tried to subsample at 250 km, and 550 km. 220 km did not reduce the spatial autocorrelation we saw. 550 km did reduce that, but left us with too few data to fit a model.
+
+* We then tried to subsample by latitudinal straitification. We found that the negative autocorrelation was reduced in some iterations (when South Ukarine was not selected). We hypothesized that particular datapoint is the cause.
+
+* We removed the SU data point and ran the local moran's I again. This time, we have no local clustering at 550 km!
