@@ -47,21 +47,84 @@ Bighead <- asian.carp[asian.carp$Species=="Bighead",]
 Silver <- asian.carp[asian.carp$Species=="Silver",]
 Big.sil <- rbind(Bighead, Silver) # combine the two groups
 
+
+## Define two functions for AICs
+compute_akaike_weights <- function(aic_scores) {
+  # Find the AIC of the best model
+  aic_min <- min(aic_scores)
+  
+  # Calculate delta AIC values
+  d_aic <- aic_scores - aic_min
+  
+  # Compute Akaike weights
+  akaike_weights <- exp(-0.5 * d_aic) / sum(exp(-0.5 * d_aic))
+  
+  return(akaike_weights)
+}
+compare_aic_scores <- function(aic_scores) {
+  # Find the AIC of the best model
+  aic_min <- min(aic_scores)
+  
+  # Determining if the smallest value is 2 units smaller than the others
+  is_smaller_by_two <- all(aic_min + 2 <= aic_scores[aic_scores != aic_min])
+  
+  # Return the index if 
+  if (is_smaller_by_two) {
+    min_index <- which(aic_scores == aic_min)
+    return(min_index)
+  } else {
+    return(-999)
+  }
+}
 ```
 
 ## Black carp
 
 For black carp data, we do not subsample at any distances. But we removed the South Ukarine data point for all the following analyses.
 
-### Using annual temperature - no subsample
 
-```{r black carp annual temp}
+### Temperature prediction of black carp AAM
+
+```{r temperature prediction}
 # Clean data
 Black <- Black %>% filter(!row_number() == 5) %>% filter(sex != "male")
 
 # Remove the South Ukarine data point
 black.clean <- Black %>% filter(!row_number() == 20)
 
+## Build the models with three temperature metrics
+black.annual <- lm(log(AAM)~AnnualTemp, data = black.clean)
+black.cold <- lm(log(AAM)~ColdTemp, data = black.clean)
+black.warm <- lm(log(AAM)~WarmTemp, data = black.clean)
+
+summary(black.annual)
+summary(black.cold)
+summary(black.warm)
+
+
+## Power analyses - annual
+# calculate the coefficient of determination
+coe.annual <- summary(black.annual)$adj.r.squared
+pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.annual/(1 -coe.annual),
+            sig.level = 0.05)
+
+## Power analyses - annual
+# calculate the coefficient of determination
+coe.cold <- summary(black.cold)$adj.r.squared
+pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.cold/(1 -coe.cold),
+            sig.level = 0.05)
+pwr.f2.test(u = 1, f2 = coe.cold/(1 -coe.cold),
+            sig.level = 0.05, power = 0.8)
+```
+
+* We can see that annual temperature and cold temperature are significant predictors of black carp AAM. Warm temperature is not.
+
+* Power analyses suggested that our current sample size is sufficient enought to produce a strong statistical power.
+
+
+### Model selection using annual temperature - no subsample
+
+```{r black carp annual temp}
 # Build the models
 black.simple <- lm(log(AAM)~AnnualTemp, data = black.clean)
 black.linear <- lm(log(AAM)~AnnualTemp+condition, data = black.clean)
@@ -82,8 +145,10 @@ aictab(cand.set = models, modnames = mod.names, sort = FALSE)
 # R^2 value for the four models
 r_2 <- data.frame(
   Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(summary(black.simple)$r.squared, summary(black.linear)$r.squared,
-          summary(black.int)$r.squared, summary(black.group)$r.squared)
+  R2 = c(summary(black.simple)$adj.r.squared,
+         summary(black.linear)$adj.r.squared,
+         summary(black.int)$adj.r.squared,
+         summary(black.group)$adj.r.squared)
 )
 kable(r_2)
 
@@ -93,16 +158,9 @@ summary(black.simple)
 summary(black.linear)
 summary(black.int)
 summary(black.group)
-
-
-## Power analysis
-# calculate the coefficient of determination
-coe <- summary(black.simple)$adj.r.squared
-pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe/(1 -coe), sig.level = 0.05)
-
 ```
 
-### Using cold temperature - no subsample
+### Model selection using cold temperature - no subsample
 
 ```{r black carp cold temp}
 # Build the models
@@ -125,8 +183,10 @@ aictab(cand.set = models, modnames = mod.names, sort = FALSE)
 ## R^2 value for the four models
 r_2 <- data.frame(
   Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(summary(black.simple)$r.squared, summary(black.linear)$r.squared,
-          summary(black.int)$r.squared, summary(black.group)$r.squared)
+  R2 = c(summary(black.simple)$adj.r.squared,
+         summary(black.linear)$adj.r.squared,
+         summary(black.int)$adj.r.squared,
+         summary(black.group)$adj.r.squared)
 )
 kable(r_2)
 
@@ -136,13 +196,12 @@ summary(black.simple)
 summary(black.linear)
 summary(black.int)
 summary(black.group)
-
-
-## Power analysis
-# calculate the coefficient of determination
-coe <- summary(black.simple)$adj.r.squared
-pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe/(1 -coe), sig.level = 0.05)
 ```
+
+* No significant preference among the four models. Therefore, the simple linear model is selected.
+
+* Cold temperature in general gives better predictions (lower AICc and higher R2).
+
 
 ### Black carp graphs with two conditions separated
 
@@ -193,7 +252,7 @@ summary(black.cold.n)
 summary(black.cold.a)
 ```
 
-It turned put that after separating out the artificial condition, the model performed much better. While the artificial model alone did not even have a significant relationship.
+* It turned put that after separating out the artificial condition, the model performed much better. While the artificial model alone did not even have a significant relationship.
 
 
 ## Asian carp
@@ -229,10 +288,10 @@ for(i in 1:1000){
   reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
   
   # AICs for annual
-  asian.linear.results[i,1]<-as.numeric(AIC(reg.linear.annual))
-  asian.add.results[i,1]<-as.numeric(AIC(reg.add.annual))
-  asian.int.results[i,1]<-as.numeric(AIC(reg.int.annual))
-  asian.group.results[i,1]<-as.numeric(AIC(reg.group.annual))
+  asian.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
+  asian.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
+  asian.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
+  asian.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
   
   # R2 for annual
   asian.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
@@ -247,10 +306,10 @@ for(i in 1:1000){
   reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
   
   # AICs for cold
-  asian.linear.results[i,3]<-as.numeric(AIC(reg.linear.cold))
-  asian.add.results[i,3]<-as.numeric(AIC(reg.add.cold))
-  asian.int.results[i,3]<-as.numeric(AIC(reg.int.cold))
-  asian.group.results[i,3]<-as.numeric(AIC(reg.group.cold))
+  asian.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
+  asian.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
+  asian.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
+  asian.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
   
   # R2 for cold
   asian.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
@@ -289,23 +348,18 @@ summary(reg.linear.annual)
 summary(reg.add.annual)
 summary(reg.int.annual)
 summary(reg.group.annual)
-
-summary(reg.linear.cold)
-summary(reg.add.cold)
-summary(reg.int.cold)
-summary(reg.group.cold)
 ```
 
 ### Compare AICs for annual
 
 ```{r asian aic annual}
+## Look at the distribution of the differences between AIC scores
 # Calculate the differences of AIC values
 aic.asian <- matrix(NA,1000,3) # store the differences in AIC values
 aic.asian[,1] <- asian.add.results[,1] - asian.linear.results[,1]
 aic.asian[,2] <- asian.int.results[,1] - asian.linear.results[,1]
 aic.asian[,3] <- asian.group.results[,1] - asian.linear.results[,1]
 
-# Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.asian)
 colnames(data) <- c("additive-linear","interation-linear","group-linear")
@@ -327,26 +381,31 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for AnnualTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(asian.linear.results[i,1], asian.add.results[i,1],
                asian.int.results[i,1], asian.group.results[i,1])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
 
-* When looking at each literation, we saw there were zero times where one AIC value was smaller than all other AIC values by two units.
+* When looking at each iteration, we saw that around 35% of the times the simple linear model is the best.
 
 * In general, the linear model had the smallest AIC values.
 
@@ -382,26 +441,31 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for ColdTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(asian.linear.results[i,3], asian.add.results[i,3],
                asian.int.results[i,3], asian.group.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
 
-* When looking at each literation, we saw there were zero times where one AIC value was smaller than all other AIC values by two units.
+* When looking at each iteration, we saw that around 28% of the times the simple linear model is the best.
 
 * In general, the linear model had the smallest AIC values.
 
@@ -455,9 +519,10 @@ for (i in 1:1000) {
 }
 
 count
+length(count)-1
 ```
 
-* With the simple linear model, around 15% of the time when using Coldtemp is preferred over using AnnualTemp.
+* With the simple linear model, around 16% of the time when using Annualtemp is preferred over using ColdTemp.
 
 
 
@@ -490,10 +555,10 @@ for(i in 1:1000){
   reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
   
   # AICs for annual
-  grass.linear.results[i,1]<-as.numeric(AIC(reg.linear.annual))
-  grass.add.results[i,1]<-as.numeric(AIC(reg.add.annual))
-  grass.int.results[i,1]<-as.numeric(AIC(reg.int.annual))
-  grass.group.results[i,1]<-as.numeric(AIC(reg.group.annual))
+  grass.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
+  grass.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
+  grass.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
+  grass.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
   
   # R2 for annual
   grass.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
@@ -508,10 +573,10 @@ for(i in 1:1000){
   reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
   
   # AICs for cold
-  grass.linear.results[i,3]<-as.numeric(AIC(reg.linear.cold))
-  grass.add.results[i,3]<-as.numeric(AIC(reg.add.cold))
-  grass.int.results[i,3]<-as.numeric(AIC(reg.int.cold))
-  grass.group.results[i,3]<-as.numeric(AIC(reg.group.cold))
+  grass.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
+  grass.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
+  grass.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
+  grass.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
   
   # R2 for cold
   grass.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
@@ -541,11 +606,6 @@ r2cold <- data.frame(
          mean(unique(grass.group.results[,4])))
 )
 kable(r2cold)
-
-hist(grass.linear.results[,1], breaks = 10)
-hist(grass.add.results[,1], breaks = 10)
-hist(grass.int.results[,1], breaks = 10)
-hist(grass.group.results[,1], breaks = 10)
 ```
 
 ### Check the slopes for all Grass carp models
@@ -593,28 +653,33 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for ColdTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(grass.linear.results[i,1], grass.add.results[i,1],
-                 grass.int.results[i,1], grass.group.results[i,1])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+               grass.int.results[i,1], grass.group.results[i,1])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
 
 * For grass carp, AIC for simple linear model was always smaller than the additive and interaction model, but within two units, and significantly smaller than the grouped-specific model (greater than 2 units).
 
-* In each iteration, there was never once that one model was effectively preferred (AIC smaller than that of all the other models).
+* 68% of the times when the simple linear model perfroms better.
 
 
 ### Compare AICs for the cold
@@ -648,26 +713,31 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for ColdTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(grass.linear.results[i,3], grass.add.results[i,3],
-                 grass.int.results[i,3], grass.group.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+               grass.int.results[i,3], grass.group.results[i,3])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
 
-* Same conclusion as AnnualTemp.
+* Same conclusion as AnnualTemp. 100% of the times when the simple model performs better.
 
 
 ### Compare between annual and cold
@@ -721,7 +791,7 @@ count
 summary(count)
 ```
 
-* Cold temperature did not show any preference over Annual temperature.
+* Cold temperature did not show any preference over Annual temperature. No significant differences.
 
 
 ## Bighead and silver carp
@@ -753,10 +823,10 @@ for(i in 1:1000){
   reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
   
   # AICs for annual
-  bs.linear.results[i,1]<-as.numeric(AIC(reg.linear.annual))
-  bs.add.results[i,1]<-as.numeric(AIC(reg.add.annual))
-  bs.int.results[i,1]<-as.numeric(AIC(reg.int.annual))
-  bs.group.results[i,1]<-as.numeric(AIC(reg.group.annual))
+  bs.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
+  bs.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
+  bs.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
+  bs.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
   
   # R2 for annual
   bs.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
@@ -771,10 +841,10 @@ for(i in 1:1000){
   reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
   
   # AICs for cold
-  bs.linear.results[i,3]<-as.numeric(AIC(reg.linear.cold))
-  bs.add.results[i,3]<-as.numeric(AIC(reg.add.cold))
-  bs.int.results[i,3]<-as.numeric(AIC(reg.int.cold))
-  bs.group.results[i,3]<-as.numeric(AIC(reg.group.cold))
+  bs.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
+  bs.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
+  bs.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
+  bs.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
   
   # R2 for cold
   bs.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
@@ -804,12 +874,6 @@ r2cold <- data.frame(
          mean(unique(bs.group.results[,4])))
 )
 kable(r2cold)
-
-hist(bs.linear.results[,1], breaks = 10)
-hist(bs.add.results[,1], breaks = 10)
-hist(bs.int.results[,1], breaks = 10)
-hist(bs.group.results[,1], breaks = 10)
-
 ```
 
 ### Check the slopes for all bighead and silver carp models
@@ -857,26 +921,33 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for AnnualTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(bs.linear.results[i,1], bs.add.results[i,1],
-                 bs.int.results[i,1], bs.group.results[i,1])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+               bs.int.results[i,1], bs.group.results[i,1])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
 
-* We saw a large range in the difference of AIC values due to a larger number of combinations for subsampling sets. However, in each iteration, there was not once when the AIC of one model is more than 2 units smaller than that of the others.
+* We saw a large range in the difference of AIC values due to a larger number of combinations for subsampling sets.
+
+* 5.8% times simple model. 22% times linear additive model.
 
 
 ### Compare AICs for the cold
@@ -910,24 +981,32 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
   theme_bw()
 
 
-## Checking AIC values in each iteration for ColdTemp
-count <- NA
+## Check the AICc scores and akaike weights in 1000 iterations
+weight.matrix <- matrix(NA, 1000, 4)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
   aic_value <- c(bs.linear.results[i,3], bs.add.results[i,3],
-                 bs.int.results[i,3], bs.group.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+               bs.int.results[i,3], bs.group.results[i,3])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
+
+summary(weight.matrix)
+table(count)
 ```
+
+* 47% simple linear model, 6.6% linear additive model.
+
 
 ### Compare between annual and cold
 
@@ -976,8 +1055,9 @@ for (i in 1:1000) {
     count <- c(count, which(aic_value == smallest_aic))
   }
 }
-count
 
+count
+table(count)
 ```
 
 * For bs, using annual temperature is always better than using the cold temperature (difference in AIC > 2) for all models. This was also explained by lower R^2 values for the cold temperature models.
