@@ -48,18 +48,45 @@ library(sf)
 ```{r data import}
 ## Import location data
 location <- read.csv("location_no_temps.csv")
-location <- unique(location) # remove duplicating locations
+location <- unique(location)
+
+location.new <- location %>% # remove duplicating locations
+  filter(Location != "South Ukraine") # remove South Ukraine
 
 # Clean the data
 carp <- read.csv("eddie_carp_new.csv")
 carp.r <- carp %>% 
-  filter(sex != "male") %>% # keep the non-male data points
-  distinct(location, .keep_all = TRUE) # remove all repeating locations
+  filter(!row_number() == 5) %>%
+  filter(sex != "male")
+
+carp.new <- carp.r %>% 
+  filter(!row_number() == 20) # remove South Ukraine
+
 
 ## Download one file to get the spatial points
 # (this defines what projection to use when converting to spatial objects)
 tmin.1979 <- brick("cpc/tmin.1979.nc", varname = "tmin")
 tmin.1979<-rotate(tmin.1979)
+
+
+## Define a function to plot the correlogram for local moran's I
+
+plot_correlog <- function(model){
+  # Define margins
+  par(mfrow=c(2,1),mar=c(4,4,2,2))
+
+  # Use the coorelog function to develop the relationship
+  test <- correlog(coords$long, coords$lat, model$residuals,
+                   increment=50, resamp=500, latlon=T)
+
+  # Plot with the entire distance range
+  plot(test, main=paste(model$call))
+  abline(h=0)
+
+  # Reduce the distance range to 2500 km
+  plot(test, main="", xlim=c(0,2500))
+  abline(h=0)
+}
 ```
 
 
@@ -82,23 +109,31 @@ world %>%
 ```
 
 
-## Calculate the residuals from the linear model
+## Section 1: Spatial autocorrelation examination for entire dataset
 
-```{r model}
-# Define the model
-lm.annual <- lm(log(carp.r$AAM)~carp.r$AnnualTemp) # Annual temperature
-lm.cold <- lm(log(carp.r$AAM)~carp.r$ColdTemp) # Cold temperature
-lm.warm <- lm(log(carp.r$AAM)~carp.r$WarmTemp) # Warm temperature
+### Model definition
 
-# See the results
-summary(lm.annual)
-summary(lm.cold)
-summary(lm.warm)
+We first need to define all 9 models (3 models for each temperature).
+
+```{r model with SU}
+# Define the models for AnnualTemp
+annual.lin <- lm(log(AAM)~AnnualTemp, data = carp.r)
+annual.add <- lm(log(AAM)~AnnualTemp+condition, data = carp.r)
+annual.int <- lm(log(AAM)~AnnualTemp*condition, data = carp.r)
+
+# Define the models for ColdTemp
+cold.lin <- lm(log(AAM)~ColdTemp, data = carp.r)
+cold.add <- lm(log(AAM)~ColdTemp+condition, data = carp.r)
+cold.int <- lm(log(AAM)~ColdTemp*condition, data = carp.r)
+
+# Define the model for WarmTemp
+warm.lin <- lm(log(AAM)~WarmTemp, data = carp.r)
+warm.add <- lm(log(AAM)~WarmTemp+condition, data = carp.r)
+warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.r)
 ```
 
 
-
-## Global spatial autocorrelation
+### Global Moran.I
 
 ```{r global}
 ## Make spatial dataframe
@@ -109,94 +144,99 @@ spatial.data <- SpatialPointsDataFrame(coords,df,proj4string = tmin.1979@crs)
 # Get a distance matrix from all points
 dists <- spDists(spatial.data, longlat = TRUE)
 
-## Run the Moran.I test on the residuals
-Moran.annual <- Moran.I(lm.annual$residuals, dists)
-Moran.cold <- Moran.I(lm.cold$residuals, dists)
 
-global.moran <- data.frame(
-  Model = c("Moran.annual", "Moran.cold"),
-  Observed = c(Moran.annual$observed, Moran.cold$observed),
-  Expected = c(Moran.annual$expected, Moran.cold$expected),
-  sd = c(Moran.annual$sd, Moran.cold$sd),
-  p.value = c(Moran.annual$p.value, Moran.cold$p.value)
+## Global Moran.I
+# Annual Temp
+Moran.annual.lin <- Moran.I(annual.lin$residuals, dists)
+Moran.annual.add <- Moran.I(annual.add$residuals, dists)
+Moran.annual.int <- Moran.I(annual.int$residuals, dists)
+
+global.moran.annual <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.annual.lin$observed, Moran.annual.add$observed,
+               Moran.annual.int$observed),
+  Expected = c(Moran.annual.lin$expected, Moran.annual.add$expected,
+               Moran.annual.int$expected),
+  sd = c(Moran.annual.lin$sd, Moran.annual.add$sd, Moran.annual.int$sd),
+  p.value = c(Moran.annual.lin$p.value, Moran.annual.add$p.value,
+              Moran.annual.int$p.value)
 )
 
-kable(global.moran)
+kable(global.moran.annual)
+
+# Cold Temp
+Moran.cold.lin <- Moran.I(cold.lin$residuals, dists)
+Moran.cold.add <- Moran.I(cold.add$residuals, dists)
+Moran.cold.int <- Moran.I(cold.int$residuals, dists)
+
+global.moran.cold <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.cold.lin$observed, Moran.cold.add$observed,
+               Moran.cold.int$observed),
+  Expected = c(Moran.cold.lin$expected, Moran.cold.add$expected,
+               Moran.cold.int$expected),
+  sd = c(Moran.cold.lin$sd, Moran.cold.add$sd, Moran.cold.int$sd),
+  p.value = c(Moran.cold.lin$p.value, Moran.cold.add$p.value,
+              Moran.cold.int$p.value)
+)
+
+kable(global.moran.cold)
+
+# Warm Temp
+Moran.warm.lin <- Moran.I(warm.lin$residuals, dists)
+Moran.warm.add <- Moran.I(warm.add$residuals, dists)
+Moran.warm.int <- Moran.I(warm.int$residuals, dists)
+
+global.moran.warm <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.warm.lin$observed, Moran.warm.add$observed,
+               Moran.warm.int$observed),
+  Expected = c(Moran.warm.lin$expected, Moran.warm.add$expected,
+               Moran.warm.int$expected),
+  sd = c(Moran.warm.lin$sd, Moran.warm.add$sd, Moran.warm.int$sd),
+  p.value = c(Moran.warm.lin$p.value, Moran.warm.add$p.value,
+              Moran.warm.int$p.value)
+)
+
+kable(global.moran.warm)
 ```
 
-There is no global spatial autocorrelation for the entire dataset.
+There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
 
 
-## Local spatial autocorrelation
+### Local spatial autocorrelation
 
 ```{r correlog}
 ## Annual temperature
-par(mfrow=c(2,1),mar=c(4,4,2,2))
-
-# Use the coorelog function to develop the relationship
-test <- correlog(coords$long, coords$lat, lm.annual$residuals,
-                 increment=50, resamp=500, latlon=T)
-
-# Plot with the entire distance range
-plot(test, main="Annual Average Temperature Regression Residuals")
-abline(h=0)
-text(17400, min(test$correlation)+1, "A", cex=1.5)
-
-# Reduce the distance range to 2500 km
-plot(test, main="", xlim=c(0,2500))
-abline(h=0)
-text(2500, min(test$correlation)+1, "B", cex=1.5)
-
+plot_correlog(annual.lin)
+plot_correlog(annual.add)
+plot_correlog(annual.int)
 
 ## Cold temperature
-par(mfrow=c(2,1),mar=c(4,4,2,2))
+plot_correlog(cold.lin)
+plot_correlog(cold.add)
+plot_correlog(cold.int)
 
-# Use the coorelog function to develop the relationship
-test <- correlog(coords$long, coords$lat, lm.cold$residuals,
-                 increment=50, resamp=500, latlon=T)
-
-# Plot with the entire distance range
-plot(test, main="Cold Quarter Temperature Regression Residuals")
-abline(h=0)
-text(17400, min(test$correlation)+1, "A", cex=1.5)
-
-# Reduce the distance range to 2500 km
-plot(test, main="", xlim=c(0,2500))
-abline(h=0)
-text(2500, min(test$correlation)+1, "B", cex=1.5)
+## Warm temperature
+plot_correlog(warm.lin)
+plot_correlog(warm.add)
+plot_correlog(warm.int)
 ```
 
-In general, the correlog plots suggest that for both temperature, 600 km is a good distance to reduce local spatial autocorrelation.
-
-
-## Variogram
-
-```{r variogram}
-## Create a data frame to store the necessary information
-vario.data <- data.frame(residuals = lm.annual$residuals,
-                         x = coords$long, y = coords$lat)
-
-# Turn them to spatial points using our projection
-geo.spatial<-SpatialPoints(coords, proj4string = tmin.1979@crs)
-
-
-## Variogram
-vario <- variogram(vario.data$residuals~1, data = geo.spatial)
-plot(vario)
-```
-
+In general, the correlog plots suggest that for both temperature, 550 km is a good distance to reduce local spatial autocorrelation.
 
 If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 location points.
 
 If we pick 550 km as the cutoff distance for sub-sampling, we would have only 12 location points.
 
 
+## Section 2: Subsampling
 
-## Subsampling at 250km
+### Subsampling at 250km
 
 Here, we try to sub-sample at 250km and check the local moran's I (correlog plot) after sub-sampling.
 
-### Local moran's I - annual 250
+#### Local moran's I - annual 250
 
 ```{r subsample local moran annual 250, fig.width=14, fig.height=12, results='hide'}
 # Store the r2 values
@@ -221,7 +261,7 @@ for (i in 1:10){
 ```
 
 
-### Local moran's I - cold 250
+#### Local moran's I - cold 250
 
 ```{r subsample local moran cold 250, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.250)
@@ -245,12 +285,11 @@ for (i in 1:10){
 Subsampling at 250 km does not reduce the spatial autocorrelation in our dataset.
 
 
-
-## Subsampling at 550km
+### Subsampling at 550km
 
 Now, we try to subsample at a larger distance - 550km.
 
-### Local moran's I - annual 550
+#### Local moran's I - annual 550
 
 ```{r subsample local moran annual 550, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.550)
@@ -275,7 +314,7 @@ for (i in 1:10){
 ```
 
 
-### Local moran's I - cold 550
+#### Local moran's I - cold 550
 
 ```{r subsample local moran cold 550, fig.width=14, fig.height=12, results='hide'}
 table(carp.r$spatial.code.550)
@@ -298,14 +337,16 @@ for (i in 1:10){
 We have seen that subsampling at 550 km would largely reduce the spatial autocorrelation in our dataset at low distances, even though we are only left with 12 data points.
 
 
-## Compare the r2 values
+### Compare the r2 values
 
 ```{r compare r2}
 r2 <- data.frame(
   Time = c("Original", "Sub 250","Sub 550"),
-  Annual = c(summary(lm.annual)$adj.r.squared, mean(unique(r2.250.raw[,1])),
+  Annual = c(summary(annual.lin)$adj.r.squared,
+             mean(unique(r2.250.raw[,1])),
              mean(unique(r2.550.raw[,1]))),
-  Cold = c(summary(lm.cold)$adj.r.squared, mean(unique(r2.250.raw[,2])),
+  Cold = c(summary(cold.lin)$adj.r.squared,
+           mean(unique(r2.250.raw[,2])),
            mean(unique(r2.550.raw[,2])))
 )
 kable(r2)
@@ -315,11 +356,11 @@ However, subsampling at 550 km would reduce our R2 value as well, suggesting tha
 
 
 
-## Latitudinal stratification
+### Latitudinal stratification
 
 Now we would like to explore if stratified sub-sampling using latitude would reduce our spatial autocorrelation at low distances.
 
-### one degree latitude bin - annual
+#### one degree latitude bin - annual
 
 ```{r latitude one annual, fig.width=14, fig.height=12, results='hide'}
 
@@ -340,7 +381,7 @@ for (i in 1:10){
 dev.off()
 ```
 
-### one degree latitude bin - cold
+#### one degree latitude bin - cold
 
 ```{r latitude one cold, fig.width=14, fig.height=12, results='hide'}
 
@@ -367,64 +408,124 @@ dev.off()
 
 
 
-## Local moran's I without the South Ukarine data point
+## Section 3: Spatial autocorrelation without SU
 
-Now we would like to re-examine the local spatial autocorrelation with the South Ukarine data point removed.
-
-### Remove the data point and construct the local moran's I
-
-```{r SU removal model}
-# Remove the data point for South Ukarine
-carp.new <- carp.r[carp.r$location != "South Ukraine",]
-
-# Define the model
-lm.annual <- lm(log(carp.new$AAM)~carp.new$AnnualTemp) # Annual temperature
-lm.cold <- lm(log(carp.new$AAM)~carp.new$ColdTemp) # Cold temperature
-
-# See the results
-summary(lm.annual)
-summary(lm.cold)
+Now we would like to re-examine the global and local spatial autocorrelation with the South Ukraine data point removed.
 
 
-## Local moran's I - Annual temperature
-par(mfrow=c(2,1),mar=c(2,2,2,2))
+### Model construction
 
-# Use the coorelog function to develop the relationship
-test <- correlog(carp.new$longitude, carp.new$latitude, lm.annual$residuals,
-                 increment=50, resamp=500, latlon=T)
+Again, we first need to define all 9 models (3 models for each temperature). This time we remove the SU data point.
 
-# Plot with the entire distance range
-plot(test, main="Annual Average Temperature Regression Residuals - Removal")
-abline(h=0)
-text(17400, min(test$correlation)+1, "A", cex=1.5)
+```{r model SU removal}
+# Define the models for AnnualTemp
+annual.lin <- lm(log(AAM)~AnnualTemp, data = carp.new)
+annual.add <- lm(log(AAM)~AnnualTemp+condition, data = carp.new)
+annual.int <- lm(log(AAM)~AnnualTemp*condition, data = carp.new)
 
-# Reduce the distance range to 2500 km
-plot(test, main="", xlim=c(0,2500))
-abline(h=0)
-text(2500, min(test$correlation)+1, "B", cex=1.5)
+# Define the models for ColdTemp
+cold.lin <- lm(log(AAM)~ColdTemp, data = carp.new)
+cold.add <- lm(log(AAM)~ColdTemp+condition, data = carp.new)
+cold.int <- lm(log(AAM)~ColdTemp*condition, data = carp.new)
+
+# Define the model for WarmTemp
+warm.lin <- lm(log(AAM)~WarmTemp, data = carp.new)
+warm.add <- lm(log(AAM)~WarmTemp+condition, data = carp.new)
+warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.new)
+```
+
+### Global Moran.I
+
+```{r global SU removal}
+## Make spatial dataframe
+coords <- data.frame("long"=location.new[,3],"lat"=location.new[,2])
+df <- data.frame(a = 1:nrow(location.new[3]))
+spatial.data <- SpatialPointsDataFrame(coords,df,proj4string = tmin.1979@crs)
+
+# Get a distance matrix from all points
+dists <- spDists(spatial.data, longlat = TRUE)
 
 
-## Local moran's I - Cold temperature
-par(mfrow=c(2,1),mar=c(2,2,2,2))
+## Global Moran.I
+# Annual Temp
+Moran.annual.lin <- Moran.I(annual.lin$residuals, dists)
+Moran.annual.add <- Moran.I(annual.add$residuals, dists)
+Moran.annual.int <- Moran.I(annual.int$residuals, dists)
 
-# Use the coorelog function to develop the relationship
-test <- correlog(carp.new$longitude, carp.new$latitude, lm.cold$residuals,
-                 increment=50, resamp=500, latlon=T)
+global.moran.annual <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.annual.lin$observed, Moran.annual.add$observed,
+               Moran.annual.int$observed),
+  Expected = c(Moran.annual.lin$expected, Moran.annual.add$expected,
+               Moran.annual.int$expected),
+  sd = c(Moran.annual.lin$sd, Moran.annual.add$sd, Moran.annual.int$sd),
+  p.value = c(Moran.annual.lin$p.value, Moran.annual.add$p.value,
+              Moran.annual.int$p.value)
+)
 
-# Plot with the entire distance range
-plot(test, main="Cold Quarter Temperature Regression Residuals - Removal")
-abline(h=0)
-text(17400, min(test$correlation)+1, "A", cex=1.5)
+kable(global.moran.annual)
 
-# Reduce the distance range to 2500 km
-plot(test, main="", xlim=c(0,2500))
-abline(h=0)
-text(2500, min(test$correlation)+1, "B", cex=1.5)
+# Cold Temp
+Moran.cold.lin <- Moran.I(cold.lin$residuals, dists)
+Moran.cold.add <- Moran.I(cold.add$residuals, dists)
+Moran.cold.int <- Moran.I(cold.int$residuals, dists)
+
+global.moran.cold <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.cold.lin$observed, Moran.cold.add$observed,
+               Moran.cold.int$observed),
+  Expected = c(Moran.cold.lin$expected, Moran.cold.add$expected,
+               Moran.cold.int$expected),
+  sd = c(Moran.cold.lin$sd, Moran.cold.add$sd, Moran.cold.int$sd),
+  p.value = c(Moran.cold.lin$p.value, Moran.cold.add$p.value,
+              Moran.cold.int$p.value)
+)
+
+kable(global.moran.cold)
+
+# Warm Temp
+Moran.warm.lin <- Moran.I(warm.lin$residuals, dists)
+Moran.warm.add <- Moran.I(warm.add$residuals, dists)
+Moran.warm.int <- Moran.I(warm.int$residuals, dists)
+
+global.moran.warm <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.warm.lin$observed, Moran.warm.add$observed,
+               Moran.warm.int$observed),
+  Expected = c(Moran.warm.lin$expected, Moran.warm.add$expected,
+               Moran.warm.int$expected),
+  sd = c(Moran.warm.lin$sd, Moran.warm.add$sd, Moran.warm.int$sd),
+  p.value = c(Moran.warm.lin$p.value, Moran.warm.add$p.value,
+              Moran.warm.int$p.value)
+)
+
+kable(global.moran.warm)
+```
+
+There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
+
+
+### Local spatial autocorrelation
+
+```{r correlog SU removal}
+## Annual temperature
+plot_correlog(annual.lin)
+plot_correlog(annual.add)
+plot_correlog(annual.int)
+
+## Cold temperature
+plot_correlog(cold.lin)
+plot_correlog(cold.add)
+plot_correlog(cold.int)
+
+## Warm temperature
+plot_correlog(warm.lin)
+plot_correlog(warm.add)
+plot_correlog(warm.int)
 ```
 
 
-
-## China Dataset analyses
+## Section 4: China Dataset analyses
 
 Now let's look at the datapoints in China. There are 17 datapoints.
 
