@@ -59,9 +59,6 @@ carp.r <- carp %>%
   filter(!row_number() == 5) %>%
   filter(sex != "male")
 
-carp.new <- carp.r %>% 
-  filter(!row_number() == 20) # remove South Ukraine
-
 
 ## Download one file to get the spatial points
 # (this defines what projection to use when converting to spatial objects)
@@ -113,7 +110,7 @@ world %>%
 
 ### Model definition
 
-We first need to define all 9 models (3 models for each temperature).
+We first need to define all 12 models (3 models for each temperature).
 
 ```{r model with SU}
 # Define the models for AnnualTemp
@@ -130,6 +127,11 @@ cold.int <- lm(log(AAM)~ColdTemp*condition, data = carp.r)
 warm.lin <- lm(log(AAM)~WarmTemp, data = carp.r)
 warm.add <- lm(log(AAM)~WarmTemp+condition, data = carp.r)
 warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.r)
+
+# Define the models for GDD0
+gdd.lin <- lm(log(AAM)~average_gdd_0, data = carp.r)
+gdd.add <- lm(log(AAM)~average_gdd_0+condition, data = carp.r)
+gdd.int <- lm(log(AAM)~average_gdd_0*condition, data = carp.r)
 ```
 
 
@@ -199,6 +201,24 @@ global.moran.warm <- data.frame(
 )
 
 kable(global.moran.warm)
+
+# GDD0
+Moran.gdd.lin <- Moran.I(gdd.lin$residuals, dists)
+Moran.gdd.add <- Moran.I(gdd.add$residuals, dists)
+Moran.gdd.int <- Moran.I(gdd.int$residuals, dists)
+
+global.moran.gdd <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.gdd.lin$observed, Moran.gdd.add$observed,
+               Moran.gdd.int$observed),
+  Expected = c(Moran.gdd.lin$expected, Moran.gdd.add$expected,
+               Moran.warm.int$expected),
+  sd = c(Moran.gdd.lin$sd, Moran.gdd.add$sd, Moran.gdd.int$sd),
+  p.value = c(Moran.gdd.lin$p.value, Moran.gdd.add$p.value,
+              Moran.gdd.int$p.value)
+)
+
+kable(global.moran.gdd)
 ```
 
 There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
@@ -221,6 +241,11 @@ plot_correlog(cold.int)
 plot_correlog(warm.lin)
 plot_correlog(warm.add)
 plot_correlog(warm.int)
+
+## GDD0
+plot_correlog(gdd.lin)
+plot_correlog(gdd.add)
+plot_correlog(gdd.int)
 ```
 
 In general, the correlog plots suggest that for both temperature, 550 km is a good distance to reduce local spatial autocorrelation.
@@ -418,6 +443,10 @@ Now we would like to re-examine the global and local spatial autocorrelation wit
 Again, we first need to define all 9 models (3 models for each temperature). This time we remove the SU data point.
 
 ```{r model SU removal}
+# Remove the SU data point
+carp.new <- carp.r %>% 
+  filter(!row_number() == 20) # remove South Ukraine
+
 # Define the models for AnnualTemp
 annual.lin <- lm(log(AAM)~AnnualTemp, data = carp.new)
 annual.add <- lm(log(AAM)~AnnualTemp+condition, data = carp.new)
@@ -432,6 +461,11 @@ cold.int <- lm(log(AAM)~ColdTemp*condition, data = carp.new)
 warm.lin <- lm(log(AAM)~WarmTemp, data = carp.new)
 warm.add <- lm(log(AAM)~WarmTemp+condition, data = carp.new)
 warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.new)
+
+# Define the models for GDD0
+gdd.lin <- lm(log(AAM)~average_gdd_0, data = carp.new)
+gdd.add <- lm(log(AAM)~average_gdd_0+condition, data = carp.new)
+gdd.int <- lm(log(AAM)~average_gdd_0*condition, data = carp.new)
 ```
 
 ### Global Moran.I
@@ -500,6 +534,24 @@ global.moran.warm <- data.frame(
 )
 
 kable(global.moran.warm)
+
+# GDD0
+Moran.gdd.lin <- Moran.I(gdd.lin$residuals, dists)
+Moran.gdd.add <- Moran.I(gdd.add$residuals, dists)
+Moran.gdd.int <- Moran.I(gdd.int$residuals, dists)
+
+global.moran.gdd <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.gdd.lin$observed, Moran.gdd.add$observed,
+               Moran.gdd.int$observed),
+  Expected = c(Moran.gdd.lin$expected, Moran.gdd.add$expected,
+               Moran.warm.int$expected),
+  sd = c(Moran.gdd.lin$sd, Moran.gdd.add$sd, Moran.gdd.int$sd),
+  p.value = c(Moran.gdd.lin$p.value, Moran.gdd.add$p.value,
+              Moran.gdd.int$p.value)
+)
+
+kable(global.moran.gdd)
 ```
 
 There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
@@ -522,6 +574,11 @@ plot_correlog(cold.int)
 plot_correlog(warm.lin)
 plot_correlog(warm.add)
 plot_correlog(warm.int)
+
+## GDD0
+plot_correlog(gdd.lin)
+plot_correlog(gdd.add)
+plot_correlog(gdd.int)
 ```
 
 
