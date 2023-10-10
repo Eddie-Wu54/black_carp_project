@@ -15,17 +15,21 @@ This .Rmd file is to test the spatial autocorrelation in our black carp data fil
 
 1. Show the distribution of our data points on a map.
 
-1. Use moran's I test to test the global spatial autocorrelation in our dataset.
+2. Use moran's I test to test the global spatial autocorrelation in our dataset.
 
-2. Use the correlog plots to examine how spatial autocorrelation changes with distances.
+3. Use the correlog plots to examine how spatial autocorrelation changes with distances in all 6 temperatures and 3 different models for each temperature (18 in total).
 
-3. Use the variogram to further test point 2.
+* *Annual average air. / Cold quarter air. / Warm quarter air. / GDD 0. / Annual average water. / Cold quarter water.*
+
+* *Simple regression model. / Additive model. / Interaction model.*
 
 4. Subsample at 250 km and 550 km, and check the local moran's I after sub-sampling to see if spatial autocorrelation has been reduced.
 
 5. Conduct latitudinal stratification analysis.
 
-6. Look at the Chinese dataset - 17 data points.
+6. Remove the South Ukarine data point and conduct the same spatial autocorrelation analyses.
+
+7. Look at the Chinese dataset - 17 data points.
 
 
 
@@ -110,7 +114,7 @@ world %>%
 
 ### Model definition
 
-We first need to define all 12 models (3 models for each temperature).
+We first need to define all 18 models (3 models for each temperature).
 
 ```{r model with SU}
 # Define the models for AnnualTemp
@@ -132,6 +136,16 @@ warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.r)
 gdd.lin <- lm(log(AAM)~average_gdd_0, data = carp.r)
 gdd.add <- lm(log(AAM)~average_gdd_0+condition, data = carp.r)
 gdd.int <- lm(log(AAM)~average_gdd_0*condition, data = carp.r)
+
+# Define the models for WaterTemp
+water.lin <- lm(log(AAM)~WaterTemp, data = carp.r)
+water.add <- lm(log(AAM)~WaterTemp+condition, data = carp.r)
+water.int <- lm(log(AAM)~WaterTemp*condition, data = carp.r)
+
+# Define the models for WaterCold
+waterC.lin <- lm(log(AAM)~WaterCold, data = carp.r)
+waterC.add <- lm(log(AAM)~WaterCold+condition, data = carp.r)
+waterC.int <- lm(log(AAM)~WaterCold*condition, data = carp.r)
 ```
 
 
@@ -219,6 +233,42 @@ global.moran.gdd <- data.frame(
 )
 
 kable(global.moran.gdd)
+
+# Annual water temp
+Moran.water.lin <- Moran.I(water.lin$residuals, dists)
+Moran.water.add <- Moran.I(water.add$residuals, dists)
+Moran.water.int <- Moran.I(water.int$residuals, dists)
+
+global.moran.water <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.water.lin$observed, Moran.water.add$observed,
+               Moran.water.int$observed),
+  Expected = c(Moran.water.lin$expected, Moran.water.add$expected,
+               Moran.water.int$expected),
+  sd = c(Moran.water.lin$sd, Moran.water.add$sd, Moran.water.int$sd),
+  p.value = c(Moran.water.lin$p.value, Moran.water.add$p.value,
+              Moran.water.int$p.value)
+)
+
+kable(global.moran.water)
+
+# Cold water temp
+Moran.waterC.lin <- Moran.I(waterC.lin$residuals, dists)
+Moran.waterC.add <- Moran.I(waterC.add$residuals, dists)
+Moran.waterC.int <- Moran.I(waterC.int$residuals, dists)
+
+global.moran.waterC <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.waterC.lin$observed, Moran.waterC.add$observed,
+               Moran.waterC.int$observed),
+  Expected = c(Moran.waterC.lin$expected, Moran.waterC.add$expected,
+               Moran.waterC.int$expected),
+  sd = c(Moran.waterC.lin$sd, Moran.waterC.add$sd, Moran.waterC.int$sd),
+  p.value = c(Moran.waterC.lin$p.value, Moran.waterC.add$p.value,
+              Moran.waterC.int$p.value)
+)
+
+kable(global.moran.waterC)
 ```
 
 There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
@@ -246,13 +296,22 @@ plot_correlog(warm.int)
 plot_correlog(gdd.lin)
 plot_correlog(gdd.add)
 plot_correlog(gdd.int)
+
+## Annual water
+plot_correlog(water.lin)
+plot_correlog(water.add)
+plot_correlog(water.int)
+
+## Cold water
+plot_correlog(waterC.lin)
+plot_correlog(waterC.add)
+plot_correlog(waterC.int)
 ```
 
-In general, the correlog plots suggest that for both temperature, 550 km is a good distance to reduce local spatial autocorrelation.
+In general, the correlog plots suggest that for annual average, cold, gdd, water cold, we have a significant negative spatial autocorrelation at 550 km.
 
-If we pick 250 km as the cutoff distance for sub-sampling, we would have 20 location points.
+Howeve, warm air temperature, and annual water temperature does not have this negative spatial autocorrelation at 550 km.
 
-If we pick 550 km as the cutoff distance for sub-sampling, we would have only 12 location points.
 
 
 ## Section 2: Subsampling
@@ -440,7 +499,7 @@ Now we would like to re-examine the global and local spatial autocorrelation wit
 
 ### Model construction
 
-Again, we first need to define all 9 models (3 models for each temperature). This time we remove the SU data point.
+Again, we first need to define all 18 models (3 models for each temperature). This time we remove the SU data point.
 
 ```{r model SU removal}
 # Remove the SU data point
@@ -466,6 +525,16 @@ warm.int <- lm(log(AAM)~WarmTemp*condition, data = carp.new)
 gdd.lin <- lm(log(AAM)~average_gdd_0, data = carp.new)
 gdd.add <- lm(log(AAM)~average_gdd_0+condition, data = carp.new)
 gdd.int <- lm(log(AAM)~average_gdd_0*condition, data = carp.new)
+
+# Define the models for WaterTemp
+water.lin <- lm(log(AAM)~WaterTemp, data = carp.new)
+water.add <- lm(log(AAM)~WaterTemp+condition, data = carp.new)
+water.int <- lm(log(AAM)~WaterTemp*condition, data = carp.new)
+
+# Define the models for WaterCold
+waterC.lin <- lm(log(AAM)~WaterCold, data = carp.new)
+waterC.add <- lm(log(AAM)~WaterCold+condition, data = carp.new)
+waterC.int <- lm(log(AAM)~WaterCold*condition, data = carp.new)
 ```
 
 ### Global Moran.I
@@ -552,9 +621,45 @@ global.moran.gdd <- data.frame(
 )
 
 kable(global.moran.gdd)
+
+# Annual water temp
+Moran.water.lin <- Moran.I(water.lin$residuals, dists)
+Moran.water.add <- Moran.I(water.add$residuals, dists)
+Moran.water.int <- Moran.I(water.int$residuals, dists)
+
+global.moran.water <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.water.lin$observed, Moran.water.add$observed,
+               Moran.water.int$observed),
+  Expected = c(Moran.water.lin$expected, Moran.water.add$expected,
+               Moran.water.int$expected),
+  sd = c(Moran.water.lin$sd, Moran.water.add$sd, Moran.water.int$sd),
+  p.value = c(Moran.water.lin$p.value, Moran.water.add$p.value,
+              Moran.water.int$p.value)
+)
+
+kable(global.moran.water)
+
+# Cold water temp
+Moran.waterC.lin <- Moran.I(waterC.lin$residuals, dists)
+Moran.waterC.add <- Moran.I(waterC.add$residuals, dists)
+Moran.waterC.int <- Moran.I(waterC.int$residuals, dists)
+
+global.moran.waterC <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.waterC.lin$observed, Moran.waterC.add$observed,
+               Moran.waterC.int$observed),
+  Expected = c(Moran.waterC.lin$expected, Moran.waterC.add$expected,
+               Moran.waterC.int$expected),
+  sd = c(Moran.waterC.lin$sd, Moran.waterC.add$sd, Moran.waterC.int$sd),
+  p.value = c(Moran.waterC.lin$p.value, Moran.waterC.add$p.value,
+              Moran.waterC.int$p.value)
+)
+
+kable(global.moran.waterC)
 ```
 
-There is no global spatial autocorrelation on the entire dataset for all three temperature metrics.
+There is no global spatial autocorrelation on the entire dataset for all six temperature metrics.
 
 
 ### Local spatial autocorrelation
@@ -579,6 +684,16 @@ plot_correlog(warm.int)
 plot_correlog(gdd.lin)
 plot_correlog(gdd.add)
 plot_correlog(gdd.int)
+
+## Annual water
+plot_correlog(water.lin)
+plot_correlog(water.add)
+plot_correlog(water.int)
+
+## Cold water
+plot_correlog(waterC.lin)
+plot_correlog(waterC.add)
+plot_correlog(waterC.int)
 ```
 
 
