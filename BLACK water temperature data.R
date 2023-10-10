@@ -5,7 +5,7 @@
 #' 
 #' 2. The extracted temperature is in a weekly format. We calculated the annual
 #' average water temperature (BIOL1) and the water temperature from the coldest
-#' quarter using the "dismo" package.
+#' quarter (BIOL11) using the "dismo" package.
 
 
 library(raster)
