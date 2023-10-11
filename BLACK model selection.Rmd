@@ -11,19 +11,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This .Rmd file is to show the progress on black carp and asian carp temperature and condition analyses. Since sub-sampling from spatial autocorrelation does not give significantly different results from normal analysis for black carp, we present the results without sub-sampling here. For other asian carp species, we still subsample.
+This .Rmd file is to show the progress on black carp and asian carp temperature and condition analyses. Since sub-sampling from spatial autocorrelation does not give significantly different results from normal analysis for black carp, we present the results without sub-sampling here. For other Asian carp species, we still sub-sample at a distance of 250 km.
 
-For each species, we have four different models:
+SECTION 1 - Black Carp:
 
-1.  Simple linear model (same slope, same intercept)
-2.  Linear additive model (same slope, different intercept)
-3.  Interaction model (different slope, same intercept)
-4.  Group-specific model (different slope, different intercept)
+1. We first check how condition affects the relationship between black carp age at maturity and temperature by looking at three candidate models, for all six temperatures (annual, cold, warm, gdd0, water annual, water cold):
 
-And we consider two temperature metrics:
+* Simple linear model (same slope, same intercept)
+* Linear additive model (same slope, different intercept)
+* Interaction model (different slope, different intercept)
 
-1.  Annual temperature
-2.  Winter temperature (temperature from the coldest quarter)
+2. Since we found that none of the interaction terms is significant, we will use only the simple linear model for prediction.
+
+3. Since there is no significant relationship between warm temperature and age at maturity, we remove in from the following analyses.
+
+
+SECTION 2 - Asian carp:
+
+1. We conducted the same analyses on other asian carp species.
+
 
 ```{r data import, message=FALSE, warning=FALSE}
 library(ggplot2)
@@ -78,28 +84,153 @@ compare_aic_scores <- function(aic_scores) {
 }
 ```
 
-## Black carp
+## SECTION 1: Black carp
 
-For black carp data, we do not subsample at any distances. But we removed the South Ukarine data point for all the following analyses.
+For black carp data, we do not subsample at any distances. But we removed the South Ukraine data point for all the following analyses.
 
 
-### Temperature prediction of black carp AAM
+### Data cleaning
 
-```{r temperature prediction}
+```{r data cleaning}
 # Clean data
 Black <- Black %>% filter(!row_number() == 5) %>% filter(sex != "male")
 
-# Remove the South Ukarine data point
+# Remove the South Ukraine data point
 black.clean <- Black %>% filter(!row_number() == 20)
+```
 
-## Build the models with three temperature metrics
+
+### Check slopes for three models (all six temperatures)
+
+#### Annual Temperature
+```{r black carp annual temp}
+# Build the models
+black.simple <- lm(log(AAM)~AnnualTemp, data = black.clean)
+black.linear <- lm(log(AAM)~AnnualTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~AnnualTemp*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* There is no significant interaction term or additive term in black carp using **annual temperature**, thus the simple regression model is the best.
+
+
+#### Cold temperature
+```{r black carp cold temp}
+# Build the models
+black.simple <- lm(log(AAM)~ColdTemp, data = black.clean)
+black.linear <- lm(log(AAM)~ColdTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~ColdTemp*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* There is no significant interaction term or additive term in black carp using cold temperature, thus the simple regression model is the best.
+
+
+#### Warm temperature
+```{r black carp warm temp}
+# Build the models
+black.simple <- lm(log(AAM)~WarmTemp, data = black.clean)
+black.linear <- lm(log(AAM)~WarmTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~WarmTemp*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* Warm temperature is not a significant predictor of black carp age at maturity (same conclusion as Madison found on other Asian carps), thus we remove it in the following analyses.
+
+
+#### Base 0 annual growing degree day
+```{r black carp gdd0}
+# Build the models
+black.simple <- lm(log(AAM)~average_gdd_0, data = black.clean)
+black.linear <- lm(log(AAM)~average_gdd_0+condition, data = black.clean)
+black.int <- lm(log(AAM)~average_gdd_0*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* There is no significant interaction term or additive term in black carp ggd0, thus the simple regression model is the best.
+
+
+#### Annual water temperature
+```{r black carp water annual}
+# Build the models
+black.simple <- lm(log(AAM)~WaterTemp, data = black.clean)
+black.linear <- lm(log(AAM)~WaterTemp+condition, data = black.clean)
+black.int <- lm(log(AAM)~WaterTemp*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* There is no significant interaction term or additive term in black carp annual water temperature, thus the simple regression model is the best.
+
+
+#### Cold water temperature
+```{r black carp water cold}
+# Build the models
+black.simple <- lm(log(AAM)~WaterCold, data = black.clean)
+black.linear <- lm(log(AAM)~WaterCold+condition, data = black.clean)
+black.int <- lm(log(AAM)~WaterCold*condition, data = black.clean)
+
+
+## Look at the summary (especially the slope for each model)
+summary(black.simple)
+summary(black.linear)
+summary(black.int)
+```
+
+* There is a significant interaction term in black carp using cold quarter water temperature, thus we need to further decide based on R2 and AICc values.
+
+```{r black carp water cold model selection}
+## Get a table of corrected AICs and their Akaike weights
+models <- list(black.simple, black.linear, black.int)
+mod.names <- c('simple linear', 'linear additive', 'interaction')
+aictab(cand.set = models, modnames = mod.names, sort = FALSE)
+
+
+## R^2 value for three models
+r_2 <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(summary(black.simple)$adj.r.squared,
+         summary(black.linear)$adj.r.squared,
+         summary(black.int)$adj.r.squared)
+)
+kable(r_2)
+```
+
+* There was no preference between the two models, as the AICc values are within two units of each other.
+
+
+### Temperature predictions and power analyses
+```{r temperature predictions black carp}
+## Build the models with three temperature metrics (simple model here)
 black.annual <- lm(log(AAM)~AnnualTemp, data = black.clean)
 black.cold <- lm(log(AAM)~ColdTemp, data = black.clean)
-black.warm <- lm(log(AAM)~WarmTemp, data = black.clean)
-
-summary(black.annual)
-summary(black.cold)
-summary(black.warm)
+black.gdd <- lm(log(AAM)~average_gdd_0, data = black.clean)
+black.water <- lm(log(AAM)~WaterTemp, data = black.clean)
+black.waterC <- lm(log(AAM)~WaterCold, data = black.clean)
 
 
 ## Power analyses - annual
@@ -108,106 +239,51 @@ coe.annual <- summary(black.annual)$adj.r.squared
 pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.annual/(1 -coe.annual),
             sig.level = 0.05)
 
-## Power analyses - annual
+
+## Power analyses - cold
 # calculate the coefficient of determination
 coe.cold <- summary(black.cold)$adj.r.squared
 pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.cold/(1 -coe.cold),
             sig.level = 0.05)
-pwr.f2.test(u = 1, f2 = coe.cold/(1 -coe.cold),
+
+
+## Power analyses - gdd0
+# calculate the coefficient of determination
+coe.gdd <- summary(black.gdd)$adj.r.squared
+pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.gdd/(1 -coe.gdd),
+            sig.level = 0.05)
+
+pwr.f2.test(u = 1, f2 = coe.gdd/(1 -coe.gdd),
             sig.level = 0.05, power = 0.8)
+
+
+## Power analyses - water annual
+# calculate the coefficient of determination
+coe.water <- summary(black.water)$adj.r.squared
+pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.water/(1 -coe.water),
+            sig.level = 0.05)
+
+pwr.f2.test(u = 1, f2 = coe.water/(1 -coe.water),
+            sig.level = 0.05, power = 0.8)
+
+
+## Power analyses - water cold
+# calculate the coefficient of determination
+coe.waterC <- summary(black.waterC)$adj.r.squared
+pwr.f2.test(u = 1, v = 22 - 1 - 1, f2 = coe.waterC/(1 -coe.waterC),
+            sig.level = 0.05)
 ```
 
-* We can see that annual temperature and cold temperature are significant predictors of black carp AAM. Warm temperature is not.
+* Power analyses suggested that our current sample size is sufficient enough to produce a strong statistical power for annual temperauture, cold temperature, gdd0 (?), and cold water temperature.
 
-* Power analyses suggested that our current sample size is sufficient enought to produce a strong statistical power.
-
-
-### Model selection using annual temperature - no subsample
-
-```{r black carp annual temp}
-# Build the models
-black.simple <- lm(log(AAM)~AnnualTemp, data = black.clean)
-black.linear <- lm(log(AAM)~AnnualTemp+condition, data = black.clean)
-black.int <- lm(log(AAM)~AnnualTemp:condition, data = black.clean)
-black.group <- lm(log(AAM)~AnnualTemp*condition, data = black.clean)
-
-
-## Compare the AICs
-AIC(black.simple, black.linear, black.int, black.group)
-
-# Get a table of corrected AICs and their Akaike weights
-models <- list(black.simple, black.linear, black.int, black.group)
-mod.names <- c('simple linear', 'linear additive',
-               'interaction', "grouped-specific")
-aictab(cand.set = models, modnames = mod.names, sort = FALSE)
-
-
-# R^2 value for the four models
-r_2 <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(summary(black.simple)$adj.r.squared,
-         summary(black.linear)$adj.r.squared,
-         summary(black.int)$adj.r.squared,
-         summary(black.group)$adj.r.squared)
-)
-kable(r_2)
-
-
-## Look at the summary (especially the slope for each model)
-summary(black.simple)
-summary(black.linear)
-summary(black.int)
-summary(black.group)
-```
-
-### Model selection using cold temperature - no subsample
-
-```{r black carp cold temp}
-# Build the models
-black.simple <- lm(log(AAM)~ColdTemp, data = black.clean)
-black.linear <- lm(log(AAM)~ColdTemp+condition, data = black.clean)
-black.int <- lm(log(AAM)~ColdTemp:condition, data = black.clean)
-black.group <- lm(log(AAM)~ColdTemp*condition, data = black.clean)
-
-
-# Compare the AICs
-AIC(black.simple, black.linear, black.int, black.group)
-
-# Get a table of corrected AICs and their Akaike weights
-models <- list(black.simple, black.linear, black.int, black.group)
-mod.names <- c('simple linear', 'linear additive',
-               'interaction', "grouped-specific")
-aictab(cand.set = models, modnames = mod.names, sort = FALSE)
-
-
-## R^2 value for the four models
-r_2 <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(summary(black.simple)$adj.r.squared,
-         summary(black.linear)$adj.r.squared,
-         summary(black.int)$adj.r.squared,
-         summary(black.group)$adj.r.squared)
-)
-kable(r_2)
-
-
-## Look at the summary (especially the slope for each model)
-summary(black.simple)
-summary(black.linear)
-summary(black.int)
-summary(black.group)
-```
-
-* No significant preference among the four models. Therefore, the simple linear model is selected.
-
-* Cold temperature in general gives better predictions (lower AICc and higher R2).
+* Annual water?
 
 
 ### Black carp graphs with two conditions separated
 
 We separated the black carp dataset into two based on conditions. Since there was no preference over the four models, we used the simple linear model on each set of the data.
 
-```{r black carp graphs}
+```{r black carp graphs with two conditions}
 ## Annual temperature
 ggplot(black.clean, aes(x = AnnualTemp, y = log(AAM), color = condition))+
   geom_point()+
@@ -222,11 +298,35 @@ ggplot(black.clean, aes(x = ColdTemp, y = log(AAM), color = condition))+
   geom_smooth(method = "lm")+
   theme_bw()+
   labs(title = "Cold Quarter Temperature")
+
+
+## GDD0
+ggplot(black.clean, aes(x = average_gdd_0, y = log(AAM), color = condition))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  labs(title = "Growing degree day 0")
+
+
+## Annual water temperature
+ggplot(black.clean, aes(x = WaterTemp, y = log(AAM), color = condition))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  labs(title = "Growing degree day 0")
+
+
+## Cold water temperature
+ggplot(black.clean, aes(x = WaterCold, y = log(AAM), color = condition))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  labs(title = "Growing degree day 0")
 ```
 
-Now that we have seen that the artificial condition data seems to have a larger spread, we would like to run the simple linear model to take a look.
+Now that we have seen that the artificial condition data seems to have a larger spread, we would like to run a regression with only the natural conditions to see how much the R2 value can improve? Would it be similar to other Asian carp species (around 0.6)?
 
-```{r blak carp conditions}
+```{r black carp conditions}
 ## Separate into two data sets
 black.natural <- black.clean[black.clean$condition == "natural",]
 black.artificial <- black.clean[black.clean$condition == "artificial",]
@@ -235,119 +335,315 @@ black.artificial <- black.clean[black.clean$condition == "artificial",]
 ## Run the models
 black.annual.n <- lm(log(AAM)~AnnualTemp, data = black.natural)
 black.cold.n <- lm(log(AAM)~ColdTemp, data = black.natural)
+black.gdd.n <- lm(log(AAM)~average_gdd_0, data = black.natural)
+black.water.n <- lm(log(AAM)~WaterTemp, data = black.natural)
+black.waterC.n <- lm(log(AAM)~WaterCold, data = black.natural)
+
 
 black.annual.a <- lm(log(AAM)~AnnualTemp, data = black.artificial)
 black.cold.a <- lm(log(AAM)~ColdTemp, data = black.artificial)
-
-
-## Compare the AIC scores
-AIC(black.annual.n, black.annual.a) #for annual temperature
-AIC(black.cold.n, black.cold.a) #for cold temperature
+black.gdd.a <- lm(log(AAM)~average_gdd_0, data = black.artificial)
+black.water.a <- lm(log(AAM)~WaterTemp, data = black.artificial)
+black.waterC.a <- lm(log(AAM)~WaterCold, data = black.artificial)
 
 
 ## Compare the model parameters
 summary(black.annual.n)
 summary(black.annual.a)
+
 summary(black.cold.n)
 summary(black.cold.a)
+
+summary(black.gdd.n)
+summary(black.gdd.a)
+
+summary(black.water.n)
+summary(black.water.a)
+
+summary(black.waterC.n)
+summary(black.waterC.a)
+
+
+## Comparing R^2
+r_2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GGD0", "Water", "Water cold"),
+  Black.combined = c(0.31, 0.38, 0.27, 0.17, 0.29),
+  Black.natural = c(summary(black.annual.n)$adj.r.squared,
+                    summary(black.cold.n)$adj.r.squared,
+                    summary(black.gdd.n)$adj.r.squared,
+                    summary(black.water.n)$adj.r.squared,
+                    summary(black.waterC.n)$adj.r.squared),
+  Black.artificial = c(summary(black.annual.a)$adj.r.squared,
+                       summary(black.cold.a)$adj.r.squared,
+                       summary(black.gdd.a)$adj.r.squared,
+                       summary(black.water.a)$adj.r.squared,
+                       summary(black.waterC.a)$adj.r.squared),
+  Asian.total = c(0.6, 0.57, 0.62, NA, NA)
+)
+kable(r_2)
 ```
 
-* It turned put that after separating out the artificial condition, the model performed much better. While the artificial model alone did not even have a significant relationship.
+* It turned out that removing the artificial conditions greatly increase the predictive power of the model for all five temperatures. While the artificial model alone did not even have a significant relationship.
+
+* The resulting R2 (for the natural environments) is similar to that of the Asian carp.
 
 
-## Asian carp
 
-### Define the models and check the R2
+## SECTION 2: Asian carp
 
-```{r asian carp model}
+1. We followed the same work flow for other Asian carp species. However, for Asian carp, we subsample at a distance of 250 km to avoid spatial autocorrelation.
+
+
+### Data cleaning and matrices for results
+
+```{r asian data}
 ## Look at the spatial codes for the current asian carp data
 asian.carp.clean <- asian.carp %>% 
   filter(Condition %in% c("natural", "artificial"))
 
-table(asian.carp.clean$Code)
+table(asian.carp.clean$Code_Str)
+# Stratified sub-sampling gives 21 artificial and 17 natural conditions.
 
+# Simple linear model - slope, intercept, p, blank, r2, AICc
+linear.results <- matrix(NA,1000,18)
+colnames(linear.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "blank.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "blank.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "blank.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Linear additive model - slope, intercept, p(slope), p(additive), r2, AICc
+add.results <- matrix(NA,1000,18)
+colnames(add.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "additive term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "additive term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "additive term.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Interaction model - slope, intercept, p(slope), p(interaction), r2, AICc
+int.results <- matrix(NA,1000,18)
+colnames(int.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "interaction term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "interaction term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "interaction term.g",
+                                   "r2.g",
+                                   "AICc.g")
+```
 
-## Subsampling for 1000 times (define all four models in one iteration!)
-# Create the matrices to store the results
-asian.linear.results <- matrix(NA,1000,4)
-asian.add.results <- matrix(NA,1000,4)
-asian.int.results <- matrix(NA,1000,4)
-asian.group.results <- matrix(NA,1000,4)
+* Stratified sub-sampling gives 21 artificial and 17 natural conditions.
 
-# Slopes for all models
+### Define the models
 
-
-# Iteration (put both annual and cold inside one iteration)
+```{r asian carp model}
+# For 1000 iterations
 for(i in 1:1000){
-  sub <- asian.carp.clean %>% group_by(Code) %>% sample_n(size=1)
+  sub <- asian.carp.clean %>% group_by(Code_Str) %>% sample_n(size=1)
   
-  # annual
+  ## annual
   reg.linear.annual <- lm(log(AAM)~AnnualTemp, data = sub)
   reg.add.annual <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
-  reg.int.annual <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
-  reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  reg.int.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
   
-  # AICs for annual
-  asian.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
-  asian.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
-  asian.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
-  asian.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
+  # simple linear model
+  linear.results[i,1]<-summary(reg.linear.annual)$coef[2,1] #slope
+  linear.results[i,2]<-summary(reg.linear.annual)$coef[1,1] #intercept
+  linear.results[i,3]<-summary(reg.linear.annual)$coef[2,4] #p-value
+  linear.results[i,4]<-0 #blank
+  linear.results[i,5]<-summary(reg.linear.annual)$adj.r.squared #r2
+  linear.results[i,6]<-as.numeric(AICc(reg.linear.annual)) #AICc
   
-  # R2 for annual
-  asian.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
-  asian.add.results[i,2]<-summary(reg.add.annual)$adj.r.squared
-  asian.int.results[i,2]<-summary(reg.int.annual)$adj.r.squared
-  asian.group.results[i,2]<-summary(reg.group.annual)$adj.r.squared
+  # linear additive model
+  add.results[i,1]<-summary(reg.add.annual)$coef[2,1] #slope
+  add.results[i,2]<-summary(reg.add.annual)$coef[1,1] #intercept
+  add.results[i,3]<-summary(reg.add.annual)$coef[2,4] #p(slope)
+  add.results[i,4]<-summary(reg.add.annual)$coef[3,4] #p(additive term)
+  add.results[i,5]<-summary(reg.add.annual)$adj.r.squared #r2
+  add.results[i,6]<-as.numeric(AICc(reg.add.annual)) #AICc
+
+  # interaction model
+  int.results[i,1]<-summary(reg.int.annual)$coef[2,1] #slope
+  int.results[i,2]<-summary(reg.int.annual)$coef[1,1] #intercept
+  int.results[i,3]<-summary(reg.int.annual)$coef[2,4] #p(slope)
+  int.results[i,4]<-summary(reg.int.annual)$coef[4,4] #p(interact term)
+  int.results[i,5]<-summary(reg.int.annual)$adj.r.squared #r2
+  int.results[i,6]<-as.numeric(AICc(reg.int.annual)) #AICc
   
-  # cold
+
+  ## cold
   reg.linear.cold <- lm(log(AAM)~ColdTemp, data = sub)
   reg.add.cold <- lm(log(AAM)~ColdTemp+Condition, data = sub)
-  reg.int.cold <- lm(log(AAM)~ColdTemp:Condition, data = sub)
-  reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  reg.int.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
   
-  # AICs for cold
-  asian.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
-  asian.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
-  asian.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
-  asian.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
+  # simple linear model
+  linear.results[i,7]<-summary(reg.linear.cold)$coef[2,1] #slope
+  linear.results[i,8]<-summary(reg.linear.cold)$coef[1,1] #intercept
+  linear.results[i,9]<-summary(reg.linear.cold)$coef[2,4] #p-value
+  linear.results[i,10]<-0 #blank
+  linear.results[i,11]<-summary(reg.linear.cold)$adj.r.squared #r2
+  linear.results[i,12]<-as.numeric(AICc(reg.linear.cold)) #AICc
   
-  # R2 for cold
-  asian.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
-  asian.add.results[i,4]<-summary(reg.add.cold)$adj.r.squared
-  asian.int.results[i,4]<-summary(reg.int.cold)$adj.r.squared
-  asian.group.results[i,4]<-summary(reg.group.cold)$adj.r.squared
+  # linear additive model
+  add.results[i,7]<-summary(reg.add.cold)$coef[2,1] #slope
+  add.results[i,8]<-summary(reg.add.cold)$coef[1,1] #intercept
+  add.results[i,9]<-summary(reg.add.cold)$coef[2,4] #p(slope)
+  add.results[i,10]<-summary(reg.add.cold)$coef[3,4] #p(additive term)
+  add.results[i,11]<-summary(reg.add.cold)$adj.r.squared #r2
+  add.results[i,12]<-as.numeric(AICc(reg.add.cold)) #AICc
+
+  # interaction model
+  int.results[i,7]<-summary(reg.int.cold)$coef[2,1] #slope
+  int.results[i,8]<-summary(reg.int.cold)$coef[1,1] #intercept
+  int.results[i,9]<-summary(reg.int.cold)$coef[2,4] #p(slope)
+  int.results[i,10]<-summary(reg.int.cold)$coef[4,4] #p(interact term)
+  int.results[i,11]<-summary(reg.int.cold)$adj.r.squared #r2
+  int.results[i,12]<-as.numeric(AICc(reg.int.cold)) #AICc
+  
+  
+  ## gdd0
+  reg.linear.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+  reg.add.gdd <- lm(log(AAM)~AnnualDD+Condition, data = sub)
+  reg.int.gdd <- lm(log(AAM)~AnnualDD*Condition, data = sub)
+  
+  # simple linear model
+  linear.results[i,13]<-summary(reg.linear.gdd)$coef[2,1] #slope
+  linear.results[i,14]<-summary(reg.linear.gdd)$coef[1,1] #intercept
+  linear.results[i,15]<-summary(reg.linear.gdd)$coef[2,4] #p-value
+  linear.results[i,16]<-0 #blank
+  linear.results[i,17]<-summary(reg.linear.gdd)$adj.r.squared #r2
+  linear.results[i,18]<-as.numeric(AICc(reg.linear.gdd)) #AICc
+  
+  # linear additive model
+  add.results[i,13]<-summary(reg.add.gdd)$coef[2,1] #slope
+  add.results[i,14]<-summary(reg.add.gdd)$coef[1,1] #intercept
+  add.results[i,15]<-summary(reg.add.gdd)$coef[2,4] #p(slope)
+  add.results[i,16]<-summary(reg.add.gdd)$coef[3,4] #p(additive term)
+  add.results[i,17]<-summary(reg.add.gdd)$adj.r.squared #r2
+  add.results[i,18]<-as.numeric(AICc(reg.add.gdd)) #AICc
+
+  # interaction model
+  int.results[i,13]<-summary(reg.int.gdd)$coef[2,1] #slope
+  int.results[i,14]<-summary(reg.int.gdd)$coef[1,1] #intercept
+  int.results[i,15]<-summary(reg.int.gdd)$coef[2,4] #p(slope)
+  int.results[i,16]<-summary(reg.int.gdd)$coef[4,4] #p(interact term)
+  int.results[i,17]<-summary(reg.int.gdd)$adj.r.squared #r2
+  int.results[i,18]<-as.numeric(AICc(reg.int.gdd)) #AICc
 }
+```
+
+### Check the slopes and additive/interaction terms
+
+Now we need to:
+
+1. Check if the additive or interaction term is significant.
+
+2. Check if the relationship is significant between age at maturity and temperature (significant slope).
+
+```{r asian slope and intercept}
+## Additive/interaction term
+# annual
+mean(unique(add.results[,"additive term.a"]))
+table(add.results[,"additive term.a"] < 0.05)
+mean(unique(int.results[,"interaction term.a"]))
+table(int.results[,"interaction term.a"] < 0.05)
+
+# cold
+mean(unique(add.results[,"additive term.c"]))
+table(add.results[,"additive term.c"] < 0.05)
+mean(unique(int.results[,"interaction term.c"]))
+table(int.results[,"interaction term.c"] < 0.05)
+
+# gdd
+mean(unique(add.results[,"additive term.g"]))
+table(add.results[,"additive term.g"] < 0.05)
+mean(unique(int.results[,"interaction term.g"]))
+table(int.results[,"interaction term.g"] < 0.05)
+
+## Slope
+# annual
+mean(unique(linear.results[,"p for slope.a"]))
+mean(unique(add.results[,"p for slope.a"]))
+mean(unique(int.results[,"p for slope.a"]))
+
+# cold
+mean(unique(linear.results[,"p for slope.c"]))
+mean(unique(add.results[,"p for slope.c"]))
+mean(unique(int.results[,"p for slope.c"]))
+
+# gdd
+mean(unique(linear.results[,"p for slope.g"]))
+mean(unique(add.results[,"p for slope.g"]))
+mean(unique(int.results[,"p for slope.g"]))
+```
+* No significant additive or interaction term.
+
+* Significant slope.
 
 
-## R^2 values for the four models
+### Compare the R2
+
+```{r asian r2}
 # annual
 r2annual <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(asian.linear.results[,2])),
-         mean(unique(asian.add.results[,2])),
-         mean(unique(asian.int.results[,2])),
-         mean(unique(asian.group.results[,2])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,5])),
+         mean(unique(add.results[,5])),
+         mean(unique(int.results[,5])))
 )
 kable(r2annual)
 
 # cold
 r2cold <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(asian.linear.results[,4])),
-         mean(unique(asian.add.results[,4])),
-         mean(unique(asian.int.results[,4])),
-         mean(unique(asian.group.results[,4])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,11])),
+         mean(unique(add.results[,11])),
+         mean(unique(int.results[,11])))
 )
 kable(r2cold)
-```
 
-### Check the slopes for all Asian carp models
-
-```{r asian model summary}
-summary(reg.linear.annual)
-summary(reg.add.annual)
-summary(reg.int.annual)
-summary(reg.group.annual)
+# gdd
+r2gdd <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,17])),
+         mean(unique(add.results[,17])),
+         mean(unique(int.results[,17])))
+)
+kable(r2gdd)
 ```
 
 ### Compare AICs for annual
@@ -355,21 +651,20 @@ summary(reg.group.annual)
 ```{r asian aic annual}
 ## Look at the distribution of the differences between AIC scores
 # Calculate the differences of AIC values
-aic.asian <- matrix(NA,1000,3) # store the differences in AIC values
-aic.asian[,1] <- asian.add.results[,1] - asian.linear.results[,1]
-aic.asian[,2] <- asian.int.results[,1] - asian.linear.results[,1]
-aic.asian[,3] <- asian.group.results[,1] - asian.linear.results[,1]
+aic.asian <- matrix(NA,1000,2) # store the differences in AIC values
+aic.asian[,1] <- add.results[,6] - linear.results[,6]
+aic.asian[,2] <- int.results[,6] - linear.results[,6]
 
 # Create a data frame
 data <- as.data.frame(aic.asian)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -382,17 +677,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(asian.linear.results[i,1], asian.add.results[i,1],
-               asian.int.results[i,1], asian.group.results[i,1])
+  aic_value <- c(linear.results[i,6], add.results[i,6], int.results[i,6])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -405,31 +699,30 @@ summary(weight.matrix)
 table(count)
 ```
 
-* When looking at each iteration, we saw that around 35% of the times the simple linear model is the best.
+* When looking at each iteration, we saw that around 85% of the times the simple linear model is the best.
 
-* In general, the linear model had the smallest AIC values.
+* Akaike weight is about 60% for simple linear model.
 
 
 ### Compare AICs for the cold
 
 ```{r asian aic cold}
 # Calculate the differences of AIC values
-aic.asian <- matrix(NA,1000,3) # store the differences in AIC values
-aic.asian[,1] <- asian.add.results[,3] - asian.linear.results[,3]
-aic.asian[,2] <- asian.int.results[,3] - asian.linear.results[,3]
-aic.asian[,3] <- asian.group.results[,3] - asian.linear.results[,3]
+aic.asian <- matrix(NA,1000,2) # store the differences in AIC values
+aic.asian[,1] <- add.results[,12] - linear.results[,12]
+aic.asian[,2] <- int.results[,12] - linear.results[,12]
 
 # Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.asian)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -442,17 +735,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(asian.linear.results[i,3], asian.add.results[i,3],
-               asian.int.results[i,3], asian.group.results[i,3])
+  aic_value <- c(linear.results[i,12], add.results[i,12], int.results[i,12])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -465,183 +757,387 @@ summary(weight.matrix)
 table(count)
 ```
 
-* When looking at each iteration, we saw that around 28% of the times the simple linear model is the best.
+* When looking at each iteration, we saw that around 70% of the times the simple linear model is the best.
 
-* In general, the linear model had the smallest AIC values.
-
-
-### Compare between annual and cold
-
-```{r asian aic compare}
-# Calculate the differences of AIC values
-aic.asian <- matrix(NA,1000,4) # store the differences in AIC values
-aic.asian[,1] <- asian.linear.results[,3] - asian.linear.results[,1]
-aic.asian[,2] <- asian.add.results[,3] - asian.add.results[,1]
-aic.asian[,3] <- asian.int.results[,3] - asian.int.results[,1]
-aic.asian[,4] <- asian.group.results[,3] - asian.group.results[,1]
-
-# Look at the distribution of differences
-# Create a data frame
-data <- as.data.frame(aic.asian)
-colnames(data) <- c("linear","additive","interaction","grouped")
-
-# Convert to long data format
-data_long <- data %>%
-  pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
-
-# Define the desired order of groups
-desired_order <- c("linear","additive","interaction","grouped")
-
-# Convert "Group" to a factor with desired order
-data_long$Group <- factor(data_long$Group, levels = desired_order)
-
-# Violin plot
-ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
-  geom_violin()+
-  labs(title = "Differences of AIC scores among models, using AnnualTemp as base.")+
-  theme_bw()
+* Akaike weight is around 57% for simple linear models.
 
 
-## Checking AIC values in each iteration
-count <- NA
+### Compare among the temperatures (SIMPLE MODEL ONLY)
+
+```{r asian temperature compare}
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  R2 = c(mean(unique(linear.results[,"r2.a"])),
+         mean(unique(linear.results[,"r2.c"])),
+         mean(unique(linear.results[,"r2.g"])))
+)
+kable(r2)
+
+
+## Check the AICc scores and akaike weights in ONLY LINEAR MODEL
+weight.matrix <- matrix(NA, 1000, 3)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(asian.linear.results[i,1], asian.linear.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+  aic_value <- c(linear.results[i,6], linear.results[i,12],
+                 linear.results[i,18])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
 
-count
-length(count)-1
+summary(weight.matrix)
+table(count)
 ```
 
-* With the simple linear model, around 16% of the time when using Annualtemp is preferred over using ColdTemp.
+* With the simple linear model, around 30% of the time when using GDD is preferred over using ColdTemp.
 
 
+### Two conditions separated
 
-## Grass carp
+```{r asian separate conditions}
+## Separate the two conditions
+asian.natural <- asian.carp.clean[asian.carp.clean$Condition == "natural",]
+asian.artificial <- asian.carp.clean[asian.carp.clean$Condition == "artificial",]
 
-### Define and models and check the R2
+# Check sp
+table(asian.natural$Code_Str)
+table(asian.artificial$Code_Str)
 
-```{r grass carp model}
-Grass.clean <- Grass %>% 
-  filter(Condition %in% c("natural", "artificial"))
-
-table(Grass.clean$Code)
+# store the results
+temp.natural <- matrix(NA, 1000, 3)
+temp.artificial <- matrix(NA, 1000, 3)
 
 
-## Subsampling for 1000 times (define all four models in one iteration!)
-# Create the matrices to store the results
-grass.linear.results <- matrix(NA,1000,4)
-grass.add.results <- matrix(NA,1000,4)
-grass.int.results <- matrix(NA,1000,4)
-grass.group.results <- matrix(NA,1000,4)
-
-# Iteration (put both annual and cold inside one iteration)
+## Removing artificial for 1000 iterations
 for(i in 1:1000){
-  sub <- Grass.clean %>% group_by(Code) %>% sample_n(size=1)
   
-  # annual
-  reg.linear.annual <- lm(log(AAM)~AnnualTemp, data = sub)
-  reg.add.annual <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
-  reg.int.annual <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
-  reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  ## natural
+  sub.n <- asian.natural %>% group_by(Code_Str) %>% sample_n(size=1)
   
-  # AICs for annual
-  grass.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
-  grass.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
-  grass.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
-  grass.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+
+  # r2
+  temp.natural[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.natural[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.natural[i,3]<-summary(reg.gdd)$adj.r.squared
   
-  # R2 for annual
-  grass.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
-  grass.add.results[i,2]<-summary(reg.add.annual)$adj.r.squared
-  grass.int.results[i,2]<-summary(reg.int.annual)$adj.r.squared
-  grass.group.results[i,2]<-summary(reg.group.annual)$adj.r.squared
   
-  # cold
-  reg.linear.cold <- lm(log(AAM)~ColdTemp, data = sub)
-  reg.add.cold <- lm(log(AAM)~ColdTemp+Condition, data = sub)
-  reg.int.cold <- lm(log(AAM)~ColdTemp:Condition, data = sub)
-  reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
-  
-  # AICs for cold
-  grass.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
-  grass.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
-  grass.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
-  grass.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
-  
-  # R2 for cold
-  grass.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
-  grass.add.results[i,4]<-summary(reg.add.cold)$adj.r.squared
-  grass.int.results[i,4]<-summary(reg.int.cold)$adj.r.squared
-  grass.group.results[i,4]<-summary(reg.group.cold)$adj.r.squared
+  ## artificial
+  sub.a <- asian.artificial %>% group_by(Code_Str) %>% sample_n(size=1)
+
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub.a)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub.a)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub.a)
+
+  # r2
+  temp.artificial[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.artificial[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.artificial[i,3]<-summary(reg.gdd)$adj.r.squared
 }
 
 
-## R^2 values for the four models
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  Natural.R2 = c(mean(unique(temp.natural[,1])),
+                 mean(unique(temp.natural[,2])),
+                 mean(unique(temp.natural[,3]))),
+  Artificial.R2 = c(mean(unique(temp.artificial[,1])),
+                    mean(unique(temp.artificial[,2])),
+                    mean(unique(temp.artificial[,3])))
+)
+kable(r2)
+```
+
+* Natural and Artificial have similar R2 values when separated.
+
+## SECTION 3: Grass carp
+
+### Data cleaning and matrices for results
+
+```{r grass data}
+Grass.clean <- Grass %>% 
+  filter(Condition %in% c("natural", "artificial"))
+
+table(Grass.clean$Code_Str)
+
+
+# Simple linear model - slope, intercept, p, blank, r2, AICc
+linear.results <- matrix(NA,1000,18)
+colnames(linear.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "blank.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "blank.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "blank.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Linear additive model - slope, intercept, p(slope), p(additive), r2, AICc
+add.results <- matrix(NA,1000,18)
+colnames(add.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "additive term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "additive term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "additive term.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Interaction model - slope, intercept, p(slope), p(interaction), r2, AICc
+int.results <- matrix(NA,1000,18)
+colnames(int.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "interaction term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "interaction term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "interaction term.g",
+                                   "r2.g",
+                                   "AICc.g")
+```
+
+
+### Define the models
+
+```{r grass carp model}
+# For 1000 iterations
+for(i in 1:1000){
+  sub <- Grass.clean %>% group_by(Code_Str) %>% sample_n(size=1)
+  
+  ## annual
+  reg.linear.annual <- lm(log(AAM)~AnnualTemp, data = sub)
+  reg.add.annual <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
+  reg.int.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  
+  # simple linear model
+  linear.results[i,1]<-summary(reg.linear.annual)$coef[2,1] #slope
+  linear.results[i,2]<-summary(reg.linear.annual)$coef[1,1] #intercept
+  linear.results[i,3]<-summary(reg.linear.annual)$coef[2,4] #p-value
+  linear.results[i,4]<-0 #blank
+  linear.results[i,5]<-summary(reg.linear.annual)$adj.r.squared #r2
+  linear.results[i,6]<-as.numeric(AICc(reg.linear.annual)) #AICc
+  
+  # linear additive model
+  add.results[i,1]<-summary(reg.add.annual)$coef[2,1] #slope
+  add.results[i,2]<-summary(reg.add.annual)$coef[1,1] #intercept
+  add.results[i,3]<-summary(reg.add.annual)$coef[2,4] #p(slope)
+  add.results[i,4]<-summary(reg.add.annual)$coef[3,4] #p(additive term)
+  add.results[i,5]<-summary(reg.add.annual)$adj.r.squared #r2
+  add.results[i,6]<-as.numeric(AICc(reg.add.annual)) #AICc
+
+  # interaction model
+  int.results[i,1]<-summary(reg.int.annual)$coef[2,1] #slope
+  int.results[i,2]<-summary(reg.int.annual)$coef[1,1] #intercept
+  int.results[i,3]<-summary(reg.int.annual)$coef[2,4] #p(slope)
+  int.results[i,4]<-summary(reg.int.annual)$coef[4,4] #p(interact term)
+  int.results[i,5]<-summary(reg.int.annual)$adj.r.squared #r2
+  int.results[i,6]<-as.numeric(AICc(reg.int.annual)) #AICc
+  
+
+  ## cold
+  reg.linear.cold <- lm(log(AAM)~ColdTemp, data = sub)
+  reg.add.cold <- lm(log(AAM)~ColdTemp+Condition, data = sub)
+  reg.int.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  
+  # simple linear model
+  linear.results[i,7]<-summary(reg.linear.cold)$coef[2,1] #slope
+  linear.results[i,8]<-summary(reg.linear.cold)$coef[1,1] #intercept
+  linear.results[i,9]<-summary(reg.linear.cold)$coef[2,4] #p-value
+  linear.results[i,10]<-0 #blank
+  linear.results[i,11]<-summary(reg.linear.cold)$adj.r.squared #r2
+  linear.results[i,12]<-as.numeric(AICc(reg.linear.cold)) #AICc
+  
+  # linear additive model
+  add.results[i,7]<-summary(reg.add.cold)$coef[2,1] #slope
+  add.results[i,8]<-summary(reg.add.cold)$coef[1,1] #intercept
+  add.results[i,9]<-summary(reg.add.cold)$coef[2,4] #p(slope)
+  add.results[i,10]<-summary(reg.add.cold)$coef[3,4] #p(additive term)
+  add.results[i,11]<-summary(reg.add.cold)$adj.r.squared #r2
+  add.results[i,12]<-as.numeric(AICc(reg.add.cold)) #AICc
+
+  # interaction model
+  int.results[i,7]<-summary(reg.int.cold)$coef[2,1] #slope
+  int.results[i,8]<-summary(reg.int.cold)$coef[1,1] #intercept
+  int.results[i,9]<-summary(reg.int.cold)$coef[2,4] #p(slope)
+  int.results[i,10]<-summary(reg.int.cold)$coef[4,4] #p(interact term)
+  int.results[i,11]<-summary(reg.int.cold)$adj.r.squared #r2
+  int.results[i,12]<-as.numeric(AICc(reg.int.cold)) #AICc
+  
+  
+  ## gdd0
+  reg.linear.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+  reg.add.gdd <- lm(log(AAM)~AnnualDD+Condition, data = sub)
+  reg.int.gdd <- lm(log(AAM)~AnnualDD*Condition, data = sub)
+  
+  # simple linear model
+  linear.results[i,13]<-summary(reg.linear.gdd)$coef[2,1] #slope
+  linear.results[i,14]<-summary(reg.linear.gdd)$coef[1,1] #intercept
+  linear.results[i,15]<-summary(reg.linear.gdd)$coef[2,4] #p-value
+  linear.results[i,16]<-0 #blank
+  linear.results[i,17]<-summary(reg.linear.gdd)$adj.r.squared #r2
+  linear.results[i,18]<-as.numeric(AICc(reg.linear.gdd)) #AICc
+  
+  # linear additive model
+  add.results[i,13]<-summary(reg.add.gdd)$coef[2,1] #slope
+  add.results[i,14]<-summary(reg.add.gdd)$coef[1,1] #intercept
+  add.results[i,15]<-summary(reg.add.gdd)$coef[2,4] #p(slope)
+  add.results[i,16]<-summary(reg.add.gdd)$coef[3,4] #p(additive term)
+  add.results[i,17]<-summary(reg.add.gdd)$adj.r.squared #r2
+  add.results[i,18]<-as.numeric(AICc(reg.add.gdd)) #AICc
+
+  # interaction model
+  int.results[i,13]<-summary(reg.int.gdd)$coef[2,1] #slope
+  int.results[i,14]<-summary(reg.int.gdd)$coef[1,1] #intercept
+  int.results[i,15]<-summary(reg.int.gdd)$coef[2,4] #p(slope)
+  int.results[i,16]<-summary(reg.int.gdd)$coef[4,4] #p(interact term)
+  int.results[i,17]<-summary(reg.int.gdd)$adj.r.squared #r2
+  int.results[i,18]<-as.numeric(AICc(reg.int.gdd)) #AICc
+}
+```
+
+### Check the slopes and additive/interaction terms
+
+Now we need to:
+
+1. Check if the additive or interaction term is significant.
+
+2. Check if the relationship is significant between age at maturity and temperature (significant slope).
+
+```{r grass slope and intercept}
+## Additive/interaction term
+# annual
+mean(unique(add.results[,"additive term.a"]))
+table(add.results[,"additive term.a"] < 0.05)
+mean(unique(int.results[,"interaction term.a"]))
+table(int.results[,"interaction term.a"] < 0.05)
+
+# cold
+mean(unique(add.results[,"additive term.c"]))
+table(add.results[,"additive term.c"] < 0.05)
+mean(unique(int.results[,"interaction term.c"]))
+table(int.results[,"interaction term.c"] < 0.05)
+
+# gdd
+mean(unique(add.results[,"additive term.g"]))
+table(add.results[,"additive term.g"] < 0.05)
+mean(unique(int.results[,"interaction term.g"]))
+table(int.results[,"interaction term.g"] < 0.05)
+
+## Slope
+# annual
+mean(unique(linear.results[,"p for slope.a"]))
+mean(unique(add.results[,"p for slope.a"]))
+mean(unique(int.results[,"p for slope.a"]))
+
+# cold
+mean(unique(linear.results[,"p for slope.c"]))
+mean(unique(add.results[,"p for slope.c"]))
+mean(unique(int.results[,"p for slope.c"]))
+
+# gdd
+mean(unique(linear.results[,"p for slope.g"]))
+mean(unique(add.results[,"p for slope.g"]))
+mean(unique(int.results[,"p for slope.g"]))
+```
+
+* No significant additive or interaction term.
+
+* Significant slope.
+
+
+### Compare the R2
+
+```{r grass r2}
 # annual
 r2annual <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(grass.linear.results[,2])),
-         mean(unique(grass.add.results[,2])),
-         mean(unique(grass.int.results[,2])),
-         mean(unique(grass.group.results[,2])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,5])),
+         mean(unique(add.results[,5])),
+         mean(unique(int.results[,5])))
 )
 kable(r2annual)
 
 # cold
 r2cold <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(grass.linear.results[,4])),
-         mean(unique(grass.add.results[,4])),
-         mean(unique(grass.int.results[,4])),
-         mean(unique(grass.group.results[,4])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,11])),
+         mean(unique(add.results[,11])),
+         mean(unique(int.results[,11])))
 )
 kable(r2cold)
+
+# gdd
+r2gdd <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,17])),
+         mean(unique(add.results[,17])),
+         mean(unique(int.results[,17])))
+)
+kable(r2gdd)
 ```
 
-### Check the slopes for all Grass carp models
-
-```{r grass model summary}
-summary(reg.linear.annual)
-summary(reg.add.annual)
-summary(reg.int.annual)
-summary(reg.group.annual)
-
-summary(reg.linear.cold)
-summary(reg.add.cold)
-summary(reg.int.cold)
-summary(reg.group.cold)
-```
 
 ### Compare AICs for annual
 
 ```{r grass aic annual}
+## Look at the distribution of the differences between AIC scores
 # Calculate the differences of AIC values
-aic.grass <- matrix(NA,1000,3) # store the differences in AIC values
-aic.grass[,1] <- grass.add.results[,1] - grass.linear.results[,1]
-aic.grass[,2] <- grass.int.results[,1] - grass.linear.results[,1]
-aic.grass[,3] <- grass.group.results[,1] - grass.linear.results[,1]
+aic.grass <- matrix(NA,1000,2) # store the differences in AIC values
+aic.grass[,1] <- add.results[,6] - linear.results[,6]
+aic.grass[,2] <- int.results[,6] - linear.results[,6]
 
-# Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.grass)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -654,17 +1150,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(grass.linear.results[i,1], grass.add.results[i,1],
-               grass.int.results[i,1], grass.group.results[i,1])
+  aic_value <- c(linear.results[i,6], add.results[i,6], int.results[i,6])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -677,31 +1172,31 @@ summary(weight.matrix)
 table(count)
 ```
 
+
 * For grass carp, AIC for simple linear model was always smaller than the additive and interaction model, but within two units, and significantly smaller than the grouped-specific model (greater than 2 units).
 
-* 68% of the times when the simple linear model perfroms better.
+* 46% of the times when the simple linear model perfroms better.
 
 
 ### Compare AICs for the cold
 
 ```{r grass aic cold}
 # Calculate the differences of AIC values
-aic.grass <- matrix(NA,1000,3) # store the differences in AIC values
-aic.grass[,1] <- grass.add.results[,3] - grass.linear.results[,3]
-aic.grass[,2] <- grass.int.results[,3] - grass.linear.results[,3]
-aic.grass[,3] <- grass.group.results[,3] - grass.linear.results[,3]
+aic.grass <- matrix(NA,1000,2) # store the differences in AIC values
+aic.grass[,1] <- add.results[,12] - linear.results[,12]
+aic.grass[,2] <- int.results[,12] - linear.results[,12]
 
 # Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.grass)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -714,17 +1209,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(grass.linear.results[i,3], grass.add.results[i,3],
-               grass.int.results[i,3], grass.group.results[i,3])
+  aic_value <- c(linear.results[i,12], add.results[i,12], int.results[i,12])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -740,176 +1234,381 @@ table(count)
 * Same conclusion as AnnualTemp. 100% of the times when the simple model performs better.
 
 
-### Compare between annual and cold
+### Compare among three temperatures
 
-```{r grass aic compare}
-# Calculate the differences of AIC values
-aic.grass <- matrix(NA,1000,4) # store the differences in AIC values
-aic.grass[,1] <- grass.linear.results[,3] - grass.linear.results[,1]
-aic.grass[,2] <- grass.add.results[,3] - grass.add.results[,1]
-aic.grass[,3] <- grass.int.results[,3] - grass.int.results[,1]
-aic.grass[,4] <- grass.group.results[,3] - grass.group.results[,1]
-
-# Look at the distribution of differences
-# Create a data frame
-data <- as.data.frame(aic.grass)
-colnames(data) <- c("linear","additive","interaction","grouped")
-
-# Convert to long data format
-data_long <- data %>%
-  pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
-
-# Define the desired order of groups
-desired_order <- c("linear","additive","interaction","grouped")
-
-# Convert "Group" to a factor with desired order
-data_long$Group <- factor(data_long$Group, levels = desired_order)
-
-# Violin plot
-ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
-  geom_violin()+
-  labs(title = "Differences of AIC scores among models, using AnnualTemp as base.")+
-  theme_bw()
+```{r grass temperature compare}
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  R2 = c(mean(unique(linear.results[,"r2.a"])),
+         mean(unique(linear.results[,"r2.c"])),
+         mean(unique(linear.results[,"r2.g"])))
+)
+kable(r2)
 
 
-## Checking AIC values in each iteration
-count <- NA
+## Check the AICc scores and akaike weights in ONLY LINEAR MODEL
+weight.matrix <- matrix(NA, 1000, 3)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(grass.linear.results[i,1], grass.linear.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+  aic_value <- c(linear.results[i,6], linear.results[i,12],
+                 linear.results[i,18])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
-count
-summary(count)
+
+summary(weight.matrix)
+table(count)
 ```
 
 * Cold temperature did not show any preference over Annual temperature. No significant differences.
 
 
-## Bighead and silver carp
+### Two conditions separated
+```{r grass separate conditions}
+## Separate the two conditions
+grass.natural <- Grass.clean[Grass.clean$Condition == "natural",]
+grass.artificial <- Grass.clean[Grass.clean$Condition == "artificial",]
 
-### Define the models and compare the R2
+# Check sp
+table(grass.natural$Code_Str)
+table(grass.artificial$Code_Str)
 
-```{r bighead silver carp model}
+# store the results
+temp.natural <- matrix(NA, 1000, 3)
+temp.artificial <- matrix(NA, 1000, 3)
+
+
+## Removing artificial for 1000 iterations
+for(i in 1:1000){
+  
+  ## natural
+  sub.n <- grass.natural %>% group_by(Code_Str) %>% sample_n(size=1)
+  
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+
+  # r2
+  temp.natural[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.natural[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.natural[i,3]<-summary(reg.gdd)$adj.r.squared
+  
+  
+  ## artificial
+  sub.a <- grass.artificial %>% group_by(Code_Str) %>% sample_n(size=1)
+
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub.a)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub.a)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub.a)
+
+  # r2
+  temp.artificial[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.artificial[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.artificial[i,3]<-summary(reg.gdd)$adj.r.squared
+}
+
+
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  Natural.R2 = c(mean(unique(temp.natural[,1])),
+                 mean(unique(temp.natural[,2])),
+                 mean(unique(temp.natural[,3]))),
+  Artificial.R2 = c(mean(unique(temp.artificial[,1])),
+                    mean(unique(temp.artificial[,2])),
+                    mean(unique(temp.artificial[,3])))
+)
+kable(r2)
+```
+
+
+## SECTION 4: Bighead and silver carp
+
+### Data cleaning and matrices for results
+
+```{r bs data}
 Big.sil.clean <- Big.sil %>% 
   filter(Condition %in% c("natural", "artificial"))
 
 table(Big.sil.clean$Code)
 
 
-## Subsampling for 1000 times (define all four models in one iteration!)
-# Create the matrices to store the results
-bs.linear.results <- matrix(NA,1000,4)
-bs.add.results <- matrix(NA,1000,4)
-bs.int.results <- matrix(NA,1000,4)
-bs.group.results <- matrix(NA,1000,4)
+# Simple linear model - slope, intercept, p, blank, r2, AICc
+linear.results <- matrix(NA,1000,18)
+colnames(linear.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "blank.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "blank.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "blank.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Linear additive model - slope, intercept, p(slope), p(additive), r2, AICc
+add.results <- matrix(NA,1000,18)
+colnames(add.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "additive term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "additive term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "additive term.g",
+                                   "r2.g",
+                                   "AICc.g")
+# Interaction model - slope, intercept, p(slope), p(interaction), r2, AICc
+int.results <- matrix(NA,1000,18)
+colnames(int.results) <- c("slope.a",
+                                   "intercept.a",
+                                   "p for slope.a",
+                                   "interaction term.a",
+                                   "r2.a",
+                                   "AICc.a",
+                                   "slope.c",
+                                   "intercept.c",
+                                   "p for slope.c",
+                                   "interaction term.c",
+                                   "r2.c",
+                                   "AICc.c",
+                                   "slope.g",
+                                   "intercept.g",
+                                   "p for slope.g",
+                                   "interaction term.g",
+                                   "r2.g",
+                                   "AICc.g")
+```
+* Stratified sub-sampling gives 13 artificial points and 10 natural points.
 
-# Iteration (put both annual and cold inside one iteration)
+
+### Define the models
+
+```{r bs carp model}
+# For 1000 iterations
 for(i in 1:1000){
-  sub <- Big.sil.clean %>% group_by(Code) %>% sample_n(size=1)
+  sub <- Big.sil.clean %>% group_by(Code_Str) %>% sample_n(size=1)
   
-  # annual
+  ## annual
   reg.linear.annual <- lm(log(AAM)~AnnualTemp, data = sub)
   reg.add.annual <- lm(log(AAM)~AnnualTemp+Condition, data = sub)
-  reg.int.annual <- lm(log(AAM)~AnnualTemp:Condition, data = sub)
-  reg.group.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
+  reg.int.annual <- lm(log(AAM)~AnnualTemp*Condition, data = sub)
   
-  # AICs for annual
-  bs.linear.results[i,1]<-as.numeric(AICc(reg.linear.annual))
-  bs.add.results[i,1]<-as.numeric(AICc(reg.add.annual))
-  bs.int.results[i,1]<-as.numeric(AICc(reg.int.annual))
-  bs.group.results[i,1]<-as.numeric(AICc(reg.group.annual))
+  # simple linear model
+  linear.results[i,1]<-summary(reg.linear.annual)$coef[2,1] #slope
+  linear.results[i,2]<-summary(reg.linear.annual)$coef[1,1] #intercept
+  linear.results[i,3]<-summary(reg.linear.annual)$coef[2,4] #p-value
+  linear.results[i,4]<-0 #blank
+  linear.results[i,5]<-summary(reg.linear.annual)$adj.r.squared #r2
+  linear.results[i,6]<-as.numeric(AICc(reg.linear.annual)) #AICc
   
-  # R2 for annual
-  bs.linear.results[i,2]<-summary(reg.linear.annual)$adj.r.squared
-  bs.add.results[i,2]<-summary(reg.add.annual)$adj.r.squared
-  bs.int.results[i,2]<-summary(reg.int.annual)$adj.r.squared
-  bs.group.results[i,2]<-summary(reg.group.annual)$adj.r.squared
+  # linear additive model
+  add.results[i,1]<-summary(reg.add.annual)$coef[2,1] #slope
+  add.results[i,2]<-summary(reg.add.annual)$coef[1,1] #intercept
+  add.results[i,3]<-summary(reg.add.annual)$coef[2,4] #p(slope)
+  add.results[i,4]<-summary(reg.add.annual)$coef[3,4] #p(additive term)
+  add.results[i,5]<-summary(reg.add.annual)$adj.r.squared #r2
+  add.results[i,6]<-as.numeric(AICc(reg.add.annual)) #AICc
+
+  # interaction model
+  int.results[i,1]<-summary(reg.int.annual)$coef[2,1] #slope
+  int.results[i,2]<-summary(reg.int.annual)$coef[1,1] #intercept
+  int.results[i,3]<-summary(reg.int.annual)$coef[2,4] #p(slope)
+  int.results[i,4]<-summary(reg.int.annual)$coef[4,4] #p(interact term)
+  int.results[i,5]<-summary(reg.int.annual)$adj.r.squared #r2
+  int.results[i,6]<-as.numeric(AICc(reg.int.annual)) #AICc
   
-  # cold
+
+  ## cold
   reg.linear.cold <- lm(log(AAM)~ColdTemp, data = sub)
   reg.add.cold <- lm(log(AAM)~ColdTemp+Condition, data = sub)
-  reg.int.cold <- lm(log(AAM)~ColdTemp:Condition, data = sub)
-  reg.group.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
+  reg.int.cold <- lm(log(AAM)~ColdTemp*Condition, data = sub)
   
-  # AICs for cold
-  bs.linear.results[i,3]<-as.numeric(AICc(reg.linear.cold))
-  bs.add.results[i,3]<-as.numeric(AICc(reg.add.cold))
-  bs.int.results[i,3]<-as.numeric(AICc(reg.int.cold))
-  bs.group.results[i,3]<-as.numeric(AICc(reg.group.cold))
+  # simple linear model
+  linear.results[i,7]<-summary(reg.linear.cold)$coef[2,1] #slope
+  linear.results[i,8]<-summary(reg.linear.cold)$coef[1,1] #intercept
+  linear.results[i,9]<-summary(reg.linear.cold)$coef[2,4] #p-value
+  linear.results[i,10]<-0 #blank
+  linear.results[i,11]<-summary(reg.linear.cold)$adj.r.squared #r2
+  linear.results[i,12]<-as.numeric(AICc(reg.linear.cold)) #AICc
   
-  # R2 for cold
-  bs.linear.results[i,4]<-summary(reg.linear.cold)$adj.r.squared
-  bs.add.results[i,4]<-summary(reg.add.cold)$adj.r.squared
-  bs.int.results[i,4]<-summary(reg.int.cold)$adj.r.squared
-  bs.group.results[i,4]<-summary(reg.group.cold)$adj.r.squared
+  # linear additive model
+  add.results[i,7]<-summary(reg.add.cold)$coef[2,1] #slope
+  add.results[i,8]<-summary(reg.add.cold)$coef[1,1] #intercept
+  add.results[i,9]<-summary(reg.add.cold)$coef[2,4] #p(slope)
+  add.results[i,10]<-summary(reg.add.cold)$coef[3,4] #p(additive term)
+  add.results[i,11]<-summary(reg.add.cold)$adj.r.squared #r2
+  add.results[i,12]<-as.numeric(AICc(reg.add.cold)) #AICc
+
+  # interaction model
+  int.results[i,7]<-summary(reg.int.cold)$coef[2,1] #slope
+  int.results[i,8]<-summary(reg.int.cold)$coef[1,1] #intercept
+  int.results[i,9]<-summary(reg.int.cold)$coef[2,4] #p(slope)
+  int.results[i,10]<-summary(reg.int.cold)$coef[4,4] #p(interact term)
+  int.results[i,11]<-summary(reg.int.cold)$adj.r.squared #r2
+  int.results[i,12]<-as.numeric(AICc(reg.int.cold)) #AICc
+  
+  
+  ## gdd0
+  reg.linear.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+  reg.add.gdd <- lm(log(AAM)~AnnualDD+Condition, data = sub)
+  reg.int.gdd <- lm(log(AAM)~AnnualDD*Condition, data = sub)
+  
+  # simple linear model
+  linear.results[i,13]<-summary(reg.linear.gdd)$coef[2,1] #slope
+  linear.results[i,14]<-summary(reg.linear.gdd)$coef[1,1] #intercept
+  linear.results[i,15]<-summary(reg.linear.gdd)$coef[2,4] #p-value
+  linear.results[i,16]<-0 #blank
+  linear.results[i,17]<-summary(reg.linear.gdd)$adj.r.squared #r2
+  linear.results[i,18]<-as.numeric(AICc(reg.linear.gdd)) #AICc
+  
+  # linear additive model
+  add.results[i,13]<-summary(reg.add.gdd)$coef[2,1] #slope
+  add.results[i,14]<-summary(reg.add.gdd)$coef[1,1] #intercept
+  add.results[i,15]<-summary(reg.add.gdd)$coef[2,4] #p(slope)
+  add.results[i,16]<-summary(reg.add.gdd)$coef[3,4] #p(additive term)
+  add.results[i,17]<-summary(reg.add.gdd)$adj.r.squared #r2
+  add.results[i,18]<-as.numeric(AICc(reg.add.gdd)) #AICc
+
+  # interaction model
+  int.results[i,13]<-summary(reg.int.gdd)$coef[2,1] #slope
+  int.results[i,14]<-summary(reg.int.gdd)$coef[1,1] #intercept
+  int.results[i,15]<-summary(reg.int.gdd)$coef[2,4] #p(slope)
+  int.results[i,16]<-summary(reg.int.gdd)$coef[4,4] #p(interact term)
+  int.results[i,17]<-summary(reg.int.gdd)$adj.r.squared #r2
+  int.results[i,18]<-as.numeric(AICc(reg.int.gdd)) #AICc
 }
+```
+
+### Check the slopes and additive/interaction terms
+
+Now we need to:
+
+1. Check if the additive or interaction term is significant.
+
+2. Check if the relationship is significant between age at maturity and temperature (significant slope).
+
+```{r bs slope and intercept}
+## Additive/interaction term
+# annual
+mean(unique(add.results[,"additive term.a"]))
+table(add.results[,"additive term.a"] < 0.05)
+mean(unique(int.results[,"interaction term.a"]))
+table(int.results[,"interaction term.a"] < 0.05)
+
+# cold
+mean(unique(add.results[,"additive term.c"]))
+table(add.results[,"additive term.c"] < 0.05)
+mean(unique(int.results[,"interaction term.c"]))
+table(int.results[,"interaction term.c"] < 0.05)
+
+# gdd
+mean(unique(add.results[,"additive term.g"]))
+table(add.results[,"additive term.g"] < 0.05)
+mean(unique(int.results[,"interaction term.g"]))
+table(int.results[,"interaction term.g"] < 0.05)
+
+## Slope
+# annual
+mean(unique(linear.results[,"p for slope.a"]))
+mean(unique(add.results[,"p for slope.a"]))
+mean(unique(int.results[,"p for slope.a"]))
+
+# cold
+mean(unique(linear.results[,"p for slope.c"]))
+mean(unique(add.results[,"p for slope.c"]))
+mean(unique(int.results[,"p for slope.c"]))
+
+# gdd
+mean(unique(linear.results[,"p for slope.g"]))
+mean(unique(add.results[,"p for slope.g"]))
+mean(unique(int.results[,"p for slope.g"]))
+```
+
+* No significant additive or interaction term.
+
+* Significant slope.
 
 
-## R^2 values for the four models
+### Compare the R2
+
+```{r bs r2}
 # annual
 r2annual <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(bs.linear.results[,2])),
-         mean(unique(bs.add.results[,2])),
-         mean(unique(bs.int.results[,2])),
-         mean(unique(bs.group.results[,2])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,5])),
+         mean(unique(add.results[,5])),
+         mean(unique(int.results[,5])))
 )
 kable(r2annual)
 
 # cold
 r2cold <- data.frame(
-  Model = c("Simple linear", "Linear additive", "Interaction", "Grouped"),
-  R2 = c(mean(unique(bs.linear.results[,4])),
-         mean(unique(bs.add.results[,4])),
-         mean(unique(bs.int.results[,4])),
-         mean(unique(bs.group.results[,4])))
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,11])),
+         mean(unique(add.results[,11])),
+         mean(unique(int.results[,11])))
 )
 kable(r2cold)
+
+# gdd
+r2gdd <- data.frame(
+  Model = c("Simple linear", "Linear additive", "Interaction"),
+  R2 = c(mean(unique(linear.results[,17])),
+         mean(unique(add.results[,17])),
+         mean(unique(int.results[,17])))
+)
+kable(r2gdd)
 ```
 
-### Check the slopes for all bighead and silver carp models
-
-```{r bs model summary}
-summary(reg.linear.annual)
-summary(reg.add.annual)
-summary(reg.int.annual)
-summary(reg.group.annual)
-
-summary(reg.linear.cold)
-summary(reg.add.cold)
-summary(reg.int.cold)
-summary(reg.group.cold)
-```
 
 ### Compare AICs for annual
 
 ```{r bs aic annual}
+## Look at the distribution of the differences between AIC scores
 # Calculate the differences of AIC values
-aic.bs <- matrix(NA,1000,3) # store the differences in AIC values
-aic.bs[,1] <- bs.add.results[,1] - bs.linear.results[,1]
-aic.bs[,2] <- bs.int.results[,1] - bs.linear.results[,1]
-aic.bs[,3] <- bs.group.results[,1] - bs.linear.results[,1]
+aic.bs <- matrix(NA,1000,2) # store the differences in AIC values
+aic.bs[,1] <- add.results[,6] - linear.results[,6]
+aic.bs[,2] <- int.results[,6] - linear.results[,6]
 
-# Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.bs)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -922,17 +1621,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(bs.linear.results[i,1], bs.add.results[i,1],
-               bs.int.results[i,1], bs.group.results[i,1])
+  aic_value <- c(linear.results[i,6], add.results[i,6], int.results[i,6])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -945,31 +1643,30 @@ summary(weight.matrix)
 table(count)
 ```
 
-* We saw a large range in the difference of AIC values due to a larger number of combinations for subsampling sets.
+* We saw a large range in the difference of AIC values due to a larger number of combinations for subsampling sets. However, with stratified sub-sampling, we can reduce the variation for the difference in AIC scores.
 
-* 5.8% times simple model. 22% times linear additive model.
+* Not any preferences among the four models.
 
 
 ### Compare AICs for the cold
 
 ```{r bs aic cold}
 # Calculate the differences of AIC values
-aic.bs <- matrix(NA,1000,3) # store the differences in AIC values
-aic.bs[,1] <- bs.add.results[,3] - bs.linear.results[,3]
-aic.bs[,2] <- bs.int.results[,3] - bs.linear.results[,3]
-aic.bs[,3] <- bs.group.results[,3] - bs.linear.results[,3]
+aic.bs <- matrix(NA,1000,2) # store the differences in AIC values
+aic.bs[,1] <- add.results[,12] - linear.results[,12]
+aic.bs[,2] <- int.results[,12] - linear.results[,12]
 
 # Look at the distribution of differences
 # Create a data frame
 data <- as.data.frame(aic.bs)
-colnames(data) <- c("additive-linear","interation-linear","group-linear")
+colnames(data) <- c("additive-linear","interation-linear")
 
 # Convert to long data format
 data_long <- data %>%
   pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
 
 # Define the desired order of groups
-desired_order <- c("additive-linear","interation-linear","group-linear")
+desired_order <- c("additive-linear","interation-linear")
 
 # Convert "Group" to a factor with desired order
 data_long$Group <- factor(data_long$Group, levels = desired_order)
@@ -982,17 +1679,16 @@ ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
 
 
 ## Check the AICc scores and akaike weights in 1000 iterations
-weight.matrix <- matrix(NA, 1000, 4)
+weight.matrix <- matrix(NA, 1000, 3)
 count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(bs.linear.results[i,3], bs.add.results[i,3],
-               bs.int.results[i,3], bs.group.results[i,3])
+  aic_value <- c(linear.results[i,12], add.results[i,12], int.results[i,12])
   
   ## check the akaike weights
   weight <- compute_akaike_weights(aic_value)
-  weight.matrix[i,c(1,2,3,4)] <- round(weight[c(1,2,3,4)],3)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
   
   ## check the AICc scores
   indexing <- compare_aic_scores(aic_value)
@@ -1005,73 +1701,126 @@ summary(weight.matrix)
 table(count)
 ```
 
-* 47% simple linear model, 6.6% linear additive model.
+* No preference among the four models.
 
 
 ### Compare between annual and cold
 
-```{r bs aic compare}
-# Calculate the differences of AIC values
-aic.bs <- matrix(NA,1000,4) # store the differences in AIC values
-aic.bs[,1] <- bs.linear.results[,3] - bs.linear.results[,1]
-aic.bs[,2] <- bs.add.results[,3] - bs.add.results[,1]
-aic.bs[,3] <- bs.int.results[,3] - bs.int.results[,1]
-aic.bs[,4] <- bs.group.results[,3] - bs.group.results[,1]
-
-# Look at the distribution of differences
-# Create a data frame
-data <- as.data.frame(aic.bs)
-colnames(data) <- c("linear","additive","interaction","grouped")
-
-# Convert to long data format
-data_long <- data %>%
-  pivot_longer(cols = everything(), names_to = "Group", values_to = "Value")
-
-# Define the desired order of groups
-desired_order <- c("linear","additive","interaction","grouped")
-
-# Convert "Group" to a factor with desired order
-data_long$Group <- factor(data_long$Group, levels = desired_order)
-
-# Violin plot
-ggplot(data_long, aes(x = Group, y = Value, fill = Group))+
-  geom_violin()+
-  labs(title = "Differences of AIC scores among models, using AnnualTemp as base.")+
-  theme_bw()
+```{r bs temperature compare}
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  R2 = c(mean(unique(linear.results[,"r2.a"])),
+         mean(unique(linear.results[,"r2.c"])),
+         mean(unique(linear.results[,"r2.g"])))
+)
+kable(r2)
 
 
-## Checking AIC values in each iteration
-count <- NA
+## Check the AICc scores and akaike weights in ONLY LINEAR MODEL
+weight.matrix <- matrix(NA, 1000, 3)
+count <- numeric(0)
 
 for (i in 1:1000) {
   # Create a list of the aic values of the current iteration
-  aic_value <- c(bs.linear.results[i,1], bs.linear.results[i,3])
-  smallest_aic <- min(aic_value)
-  # Determining if the smallest value is 2 units smaller than the others
-  is_smaller_by_two <- all(smallest_aic + 2 <= aic_value[aic_value != smallest_aic])
+  aic_value <- c(linear.results[i,6], linear.results[i,12],
+                 linear.results[i,18])
   
-  # Append the index of the current list if smaller than 2 units
-  if (is_smaller_by_two) {
-    count <- c(count, which(aic_value == smallest_aic))
+  ## check the akaike weights
+  weight <- compute_akaike_weights(aic_value)
+  weight.matrix[i,c(1,2,3)] <- round(weight[c(1,2,3)],3)
+  
+  ## check the AICc scores
+  indexing <- compare_aic_scores(aic_value)
+  if (indexing != -999) {
+    count <- c(count, indexing)
   }
 }
 
-count
+summary(weight.matrix)
 table(count)
 ```
 
 * For bs, using annual temperature is always better than using the cold temperature (difference in AIC > 2) for all models. This was also explained by lower R^2 values for the cold temperature models.
 
-* For bighead and silver carp, there were fewer data points (32 datapoints in total), but more subsample sets (10 sets of subsamples. This gave us 19 data points after subsampling with a much larger variation (due to a larger number of combinations).
 
-* At extremes, we would have 13 artificial and 6 natural (if all subseting choose artificial); or 10 natural and 9 artificial (if all subsetting choose natural).
+### Two conditions separated
+```{r bs separate conditions}
+## Separate the two conditions
+bs.natural <- Big.sil.clean[Big.sil.clean$Condition == "natural",]
+bs.artificial <- Big.sil.clean[Big.sil.clean$Condition == "artificial",]
+
+# Check sp
+table(bs.natural$Code_Str)
+table(bs.artificial$Code_Str)
+
+# store the results
+temp.natural <- matrix(NA, 1000, 3)
+temp.artificial <- matrix(NA, 1000, 3)
+
+
+## Removing artificial for 1000 iterations
+for(i in 1:1000){
+  
+  ## natural
+  sub.n <- bs.natural %>% group_by(Code_Str) %>% sample_n(size=1)
+  
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub)
+
+  # r2
+  temp.natural[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.natural[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.natural[i,3]<-summary(reg.gdd)$adj.r.squared
+  
+  
+  ## artificial
+  sub.a <- bs.artificial %>% group_by(Code_Str) %>% sample_n(size=1)
+
+  # models
+  reg.annual <- lm(log(AAM)~AnnualTemp, data = sub.a)
+  reg.cold <- lm(log(AAM)~ColdTemp, data = sub.a)
+  reg.gdd <- lm(log(AAM)~AnnualDD, data = sub.a)
+
+  # r2
+  temp.artificial[i,1]<-summary(reg.annual)$adj.r.squared
+  temp.artificial[i,2]<-summary(reg.cold)$adj.r.squared
+  temp.artificial[i,3]<-summary(reg.gdd)$adj.r.squared
+}
+
+
+## Compare the R2 for three temperatures
+r2 <- data.frame(
+  Temperature = c("Annual", "Cold", "GDD0"),
+  Natural.R2 = c(mean(unique(temp.natural[,1])),
+                 mean(unique(temp.natural[,2])),
+                 mean(unique(temp.natural[,3]))),
+  Artificial.R2 = c(mean(unique(temp.artificial[,1])),
+                    mean(unique(temp.artificial[,2])),
+                    mean(unique(temp.artificial[,3])))
+)
+kable(r2)
+```
+
+
+
+
+* For bighead and silver carp, there were fewer data points (32 datapoints in total), but more subsample sets (10 sets of subsamples. This gave us 19 data points after subsampling with a much larger variation (due to a larger number of combinations). At extremes, we would have 13 artificial and 6 natural (if all subseting choose artificial); or 10 natural and 9 artificial (if all subsetting choose natural).
+
+* So we use stratified sub-sampling to reduce this effect.
 
 
 
 ## Concluding points
 
-1.  Black carp: using cold temperature have a better fit (higher R2). No preference over the four types of models.
+1. Black carp: Using cold temperature have a better fit (higher R2). No preference over the four types of models. So we chose the simple linear model (Akaike weight = 51%).
 
-2.  Black carp: When separate the two conditions, we see a large increase in the R2 for the natural condition. The artificial condition alone did not have a significant relationship between log AAM and temperature.
+2. Black carp: When separate the two conditions, we see a large increase in the R2 for the natural condition. The artificial condition alone did not have a significant relationship between log AAM and temperature.
 
-3.  Aisan carp: No preference over the four models.
+3. Asian carp: The simple linear model is preferred (87% for annual, and 70% for cold). For grass carp, the simple linear model is preferred only for using the cold temperature (100%). For bs carp, there is no preference among the four models.
+
+4. Asian carp: Using annual temperature is preferred (65% of times when annual temperature is the preferred). There is no preferrence for grass carp; but strong preference for bs carp using annual temperature.
+
+5. Stratified sub-sampling reduced the large variation in AIC values in the bighead and silver carp combined dataset.
