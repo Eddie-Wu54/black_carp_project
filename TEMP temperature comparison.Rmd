@@ -11,9 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This .Rmd file is to show the results of water temperature comparison between the global model prediction and the tributary field observation for 11 Great Lake locations. (missing Saginaw data)
+This .Rmd file is to show the results of water temperature comparison between the global model prediction and the tributary field observation for 14 Great Lake locations.
 
-For all the graphs below, the black line is the mean weekly average temperature, the blue lines are the 95% confidence interval, the red dots are field observations by week.
+Global water temperature model:
+
+*Bosmans, J., Wanders, N., Bierkens, M.F.P. et al. FutureStreams, a global dataset of future streamflow and water temperature. Sci Data 9, 307 (2022). https://doi.org/10.1038/s41597-022-01410-6*
+
+
+**Modeled temperature**: For all the graphs below, the black line is the mean weekly average temperature, the grey lines are the 95% confidence interval, the blue lines are the max and min temperature.
+
+**Field temperature**: Each year's field observation is represented by one thin color line. When we have complete data for a year, we calculate the Root Mean Square Error (RMSE) for that year.
+
 
 ```{r library, warning=FALSE, message=FALSE}
 library(ggplot2)
@@ -295,7 +303,6 @@ calculate_rmse(portdover.pred, portdover.field)
 ```{r long point}
 # observed values
 lp.field <- WT %>% filter(river == "longpoint")
-str(lp.field)
 
 # predicted values
 lp.pred <- read.csv("water temperature clean/lp_model.csv")
