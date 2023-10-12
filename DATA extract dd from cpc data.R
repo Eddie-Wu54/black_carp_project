@@ -28,7 +28,7 @@ locations <- SpatialPoints(coords, proj4string = tmin.1979@crs)
 
 # Create a new dataframe to store all the degree day data from 1979-2022 for all
 # these locations (44 years of data)
-degree_day <- matrix(NA, length(loc$Loc), 45)
+degree_day <- matrix(NA, length(loc$Location), 45)
 degree_day[,1] <- loc$Loc
 
 
@@ -50,7 +50,7 @@ for(i in 1:44){
   min <- extract(tmin,locations,layer=1)
   
   # Calculate the degree days
-  degree <- (max+min)/2 - 10
+  degree <- (max+min)/2
   degree[degree < 0] <- 0
   calculated.degrees <- rowSums(degree, na.rm = TRUE)
   degree_day[,i+1] <- as.numeric(calculated.degrees)
@@ -65,5 +65,21 @@ for (i in 1:44) {
 }
 View(degree_day)
 
+
+## Degree day average for each location
+degree_day_sum <- matrix(NA, length(loc$Location), 1)
+rownames(degree_day_sum) <- loc$Location
+
+# Use a loop for each location
+for (i in 1:32) {
+  sum <- sum(sapply(degree_day[i,][,-1], as.numeric))
+  count <- rowSums(degree_day != 0)[i] - 1
+  
+  row_average <- sum/count
+  degree_day_sum[i] <- row_average
+}
+
+
 ## Export data
 write.csv(degree_day, "location_degree_day_raw.csv")
+write.csv(degree_day_sum, "location_degree_day_base0.csv")
