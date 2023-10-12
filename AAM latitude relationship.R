@@ -1,3 +1,10 @@
+#' This script investigated:
+#' 
+#' 1. The relationship between black carp AAM and latitude.
+#' 2. The relationship between AAM of other Asian carp species and latitude.
+
+
+
 library(ggplot2)
 library(dplyr)
 library(ggpubr)
@@ -122,5 +129,3 @@ ggsave("images/aam latitude asian.jpeg",
 
 median(c(rep(4, 68), rep(6, 100)))
 median(c(rep(4, 47), rep(6, 95)))
-
-       
