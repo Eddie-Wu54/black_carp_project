@@ -1,4 +1,5 @@
-
+#' This script is for black carp subsampling at different distances and testing
+#' the resulting local moran's I.
 
 #' If we are to sub-sample at 250km, we would have two sets of auto-correlating points:
 #' 
@@ -32,7 +33,6 @@ summary(lm.annual)
 
 lm.cold <- lm(log(AAM)~ColdTemp, data = black.clean)
 summary(lm.cold)
-
 
 
 #### ENTIRE DATASET: sub-sampling at 250 km ####
