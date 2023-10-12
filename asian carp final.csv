@@ -1,92 +1,80 @@
-ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Sp_Code,Latitude,Longitude,AnnualTemp,WarmTemp,ColdTemp,AnnualDD,AnnualDD.5,AnnualDD.10
-2,Bighead,4,Amu_darya,calculated,natural,river,A,A,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
-81,Bighead,4,Turkmen,calculated,artificial,fish farm,A,A,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
-83,Grass,3.5,Turkmen,calculated,artificial,fish farm,A,AC,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
-83,Grass,4,Turkmen,calculated,natural,river,A,AC,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
-85,Silver,3,Uzbeck,calculated,artificial,fish farm,A,BI,41.8459,64.1736,14,28.6,-1.1,5650.251908,4191.355176,2960.606648
-4,Silver,4,Amu_darya,calculated,natural,river,A,BI,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
-3,Grass,7,Amu_darya,calculated,natural,river,A,AC,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
-82,Black,7.5,Turkmen,calculated,,,A,AA,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
-46,Grass,6.167,Low_Volga,calculated,natural,river,AA,AD,48.6111,44.5933,8.6,23.3,-6.1,3922.024358,2719.282742,1731.006498
-47,Grass,1.75,Malacca,specific,artificial,ponds,AB,AE,2.1944,102.2486,27.3,27.8,26.8,10183.43861,8357.359875,6531.359875
-48,Silver,2,Mid_Miss,calculated,natural,river,AC,BS,37.9458,-89.8858,12.9,24.2,0.6,5192.310868,3652.73981,2370.378266
-49,Bighead,3,Missoui_River,calculated,natural,river,AD,I,39.3148,-93.4119,12.1,24.2,-1.2,4898.758748,3444.705035,2233.651236
-52,Grass,3,Nepal,calculated,artificial,fish farm,AE,AF,28.4074,84.2923,10.2,15,3.9,6224.550034,4404.794749,2689.726577
-53,Bighead,5.5,North_China,calculated,artificial,pond,AF,K,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-55,Grass,5.5,North_China,calculated,artificial,pond,AF,AG,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-54,Black,7.5,North_China,calculated,,,AF,V,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-56,Silver,4.5,North_China,calculated,artificial,both,AF,BT,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
-57,Bighead,6.5,NorthE_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",AG,L,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
-58,Black,8,NorthE_China,calculated,,,AG,W,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
-59,Grass,6.5,NorthE_China,calculated,artificial,pond,AG,AH,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
-60,Silver,5.5,NorthE_China,calculated,artificial,pond,AG,BU,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
-62,Grass,6,Poland,calculated,artificial,pond,AH,AI,51.9515,19.9889,7.8,17.7,-3.6,3381.977899,2036.990672,1033.046389
-68,Silver,5,South_Russia,calculated,artificial,fish farm,AI,BV,46.5957,42.1203,10,22.8,-3,4196.012393,2864.227221,1799.405494
-69,Black,11,South_Ukraine,calculated,,,AJ,Y,47.3188,33.6678,9.3,21.3,-2.5,4150.623103,2776.648615,1693.090507
-70,Grass,4.5,Yangtze,calculated,natural,river,AP,AJ,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
-72,Grass,3.5,Syr_darya,calculated,natural,river,AL,AK,44.1331,66.771,11.1,26.1,-4.7,4822.389416,3484.190105,2361.906645
-73,Silver,3.5,Syr_darya,calculated,natural,river,AL,BW,44.1331,66.771,11.1,26.1,-4.7,4822.389416,3484.190105,2361.906645
-74,Bighead,3.5,Taiwan,calculated,na,na,AM,O,23.8197,121.1133,12.6,15.8,8.4,6295.195053,4470.516946,2684.517875
-76,Grass,4.5,Taiwan,calculated,artificial,pond,AM,AL,23.8197,121.1133,12.6,15.8,8.4,6295.195053,4470.516946,2684.517875
-75,Black,5,Taiwan,calculated,,,AM,Z,23.8197,121.1133,12.6,15.8,8.4,6295.195053,4470.516946,2684.517875
-77,Grass,2,Tamilnadu,calculated,artificial,ponds,AN,AM,11.6267,78.5244,28.1,30.8,25,9991.786825,8165.643967,6339.50111
-84,Grass,9.5,Upp_Amur,calculated,natural,river,AO,AN,49.866,116.839,-1.8,17.9,-23.4,2591.555012,1688.473536,957.1846159
-87,Silver,4,Yangtze,calculated,natural,river,AP,BY,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
-86,Black,4.333,Yangtze,calculated,,,AP,AB,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
-30,Silver,2,Guangxi,calculated,na,na,B,BP,24.222,109.1671,20.7,28.1,11.8,7758.178977,5936.445022,4182.824984
-67,Silver,3,South_China,calculated,natural,river,B,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-67,Silver,2.833,South_China,calculated,artificial,both,B,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-29,Silver,3,Guangdong,calculated,na,na,B,BP,22.5981,112.5323,22.4,28.3,15.1,8446.224349,6620.673836,4808.795802
-66,Grass,3.5,South_China,calculated,natural,river,B,AO,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-66,Grass,3.5,South_China,calculated,artificial,pond,B,AO,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-71,Grass,4,Sunchow,specific,natural,river,B,AO,23.3925,110.0814,20.8,27.3,12.8,8300.741581,6474.930037,4673.424971
-65,Bighead,3.5,South_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",B,N,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
-50,Bighead,10,Moscow,specific,artificial,fish farm,C,J,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
-15,Grass,8.5,Cen_Russia,calculated,artificial,fish farm,C,AP,55.2882,41.1226,4.6,17.8,-9.3,2849.362526,1800.881605,967.6340904
-51,Grass,10,Moscow,specific,artificial,fish farm,C,AP,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
-78,Bighead,6,Terek,calculated,natural,river,D,P,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
-26,Grass,5,Daghestan_Terek,calculated,natural,river,D,AQ,43.7707,47.0561,11.6,23.9,-0.6,4743.79606,3227.098571,2054.453756
-79,Grass,5,Terek,calculated,natural,river,D,AQ,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
-80,Silver,5,Terek,calculated,natural,river,D,BX,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
-27,Bighead,8.5,Dnieper,calculated,natural,river,E,F,51.2448,30.725,7.5,18.7,-4.5,3476.98075,2223.207401,1247.228562
-39,Bighead,8.5,Kiev,specific,artificial,fish farm,E,F,50.4547,30.5238,8.1,19.2,-3.8,3698.404562,2407.936574,1395.088776
-40,Grass,8.5,Kiev,specific,artificial,fish farm,E,AR,50.4547,30.5238,8.1,19.2,-3.8,3698.404562,2407.936574,1395.088776
-31,Black,6.5,Hamaapil,specific,,,F,S,32.3778,34.9833,20.2,26,14.1,7518.547137,5692.356661,3869.44439
-28,Grass,4.5,Dor,specific,artificial,pond,F,AS,32.6074,34.922,20.3,26.3,13.8,7497.847148,5671.656672,3852.647104
-35,Bighead,3,Israel,calculated,na,na,F,G,31.4683,35.0584,17.5,23.5,10.4,7127.393497,5301.566898,3510.03078
-43,Black,8.5,Leninskoye,specific,,,G,U,47.9297,132.6499,1.9,20.1,-19.3,3079.462148,2074.114758,1235.688509
-45,Grass,8.5,Low_Amur,calculated,natural,river,G,AT,48.0073,133.0803,1.6,19.9,-19.7,2979.814027,1985.386442,1166.177139
-44,Grass,9.5,Leninskoye,specific,natural,river,G,AT,47.9297,132.6499,1.9,20.1,-19.3,3079.462148,2074.114758,1235.688509
-63,Bighead,6,Romania,calculated,artificial,pond (requested),H,M,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
-61,Black,4,Nucet_farm,specific,,,H,X,44.8,25.55,10.1,20.2,-1.2,4168.379654,2740.732606,1602.78818
-64,Grass,6.5,Romania,calculated,na,na,H,AU,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
-1,Grass,3,Alabama,calculated,na,na,I,AV,32.3508,-87.0124,18.2,27,9.1,6932.939344,5148.685472,3512.437469
-5,Black,7.167,Amur_river,calculated,,,J,Q,53.2024,124.9597,-3.1,17,-25.4,2389.377077,1525.58232,831.3771999
-6,Grass,8.357,Amur_river,calculated,natural,river,J,AW,53.2024,124.9597,-3.1,17,-25.4,2389.377077,1525.58232,831.3771999
-7,Silver,6.375,Amur_river,calculated,natural,river,J,BJ,53.2024,124.9597,-3.1,17,-25.4,2389.377077,1525.58232,831.3771999
-8,Grass,3.5,Arkansas,calculated,artificial,fish farm,K,AX,35.4877,-92.2701,14.9,25.2,3.7,6021.899695,4349.709868,2904.060007
-9,Grass,5,Balkhash,calculated,natural,lake,L,AY,45.7665,74.2302,7.7,23.1,-8.9,4079.947573,2897.774657,1880.699899
-11,Grass,3.5,Balyktchy ,calculated,artificial,fish farm,M,AZ,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
-12,Silver,3.5,Balyktchy fish farm; vicinity of Tashkent,calculated,artificial,farm,M,BK,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
-10,Bighead,4.5,Balyktchy ,calculated,artificial,fish farm,M,B,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
-14,Silver,4.5,Cen_China,calculated,na,na,N,BL,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
-13,Bighead,4.5,Cen_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",N,C,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
-17,Black,6,CenE_China,calculated,,,O,R,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
-19,Silver,3.5,CenE_China,calculated,artificial,pond,O,BM,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
-18,Grass,4.5,CenE_China,calculated,artificial,pond,O,BA,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
-16,Bighead,5,CenE_China,calculated,artificial,pond,O,D,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
-20,Grass,4,CenSouth_China,calculated,na,na,P,BB,25.7597,111.1713,16.9,26.1,6.8,6424.524932,4658.664045,3104.196636
-21,Grass,3.5,CenSouth_Russia,calculated,artificial,pond,Q,BC,53.2293,43.4146,4.7,18.6,-9.8,2951.964856,1909.823588,1061.735868
-22,Silver,2,Cuba,calculated,na,waterbodies,R,BN,21.5079,-77.8094,25.3,27.4,22.5,9515.247063,7689.104206,5862.961348
-24,Grass,3,Cuttack,specific,artificial,pond,S,BD,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
-25,Silver,3,Cuttack,specific,artificial,pond,S,BO,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
-23,Bighead,3,Cuttack,specific,artificial,pond,S,E,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
-32,Silver,5.5,Heilongjiang,calculated,na,na,T,BQ,49.6142,127.9869,0.5,19.2,-21,2932.709895,1962.413358,1160.191709
-33,Black,6,Hukou,calculated,,,U,T,29.6447,116.3075,17.4,28.2,6,5470.675691,3831.509097,2444.138028
-34,Grass,6.5,Hungary,calculated,na,na,V,BE,47.3371,19.5343,10.4,19.9,-0.1,4178.685372,2723.350859,1570.708516
-36,Silver,3.5,Jiangsu,calculated,na,na,W,BR,33.0743,119.5496,14.8,26.3,2.8,5700.953814,4053.197194,2699.525026
-37,Grass,4,Kapchagay ,calculated,natural,river (reservoir),X,BF,43.921,77.0974,8.2,21.8,-6.5,4592.134396,3250.387022,2126.244048
-38,Grass,8.5,Khabarovsk,specific,natural,river,Y,BG,50.6966,137.7157,-0.1,16.8,-19.7,2531.346922,1616.687889,882.6675908
-42,Grass,4.75,Krasnodar,specific,artificial,pond,Z,BH,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
-41,Bighead,4.5,Krasnodar,specific,natural,river,Z,H,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
-41,Bighead,5,Krasnodar,specific,artificial,fish farm,Z,H,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
+ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Code_Str,Code_Sp,Latitude,Longitude,AnnualTemp,WarmTemp,ColdTemp,AnnualDD,AnnualDD.5,AnnualDD.10
+2,Bighead,4,Amu_darya,calculated,natural,river,A,A,BA,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
+81,Bighead,4,Turkmen,calculated,artificial,fish farm,A,R,BK,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
+83,Grass,3.5,Turkmen,calculated,artificial,fish farm,A,R,GM,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
+83,Grass,4,Turkmen,calculated,natural,river,A,A,GA,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
+85,Silver,3,Uzbeck,calculated,artificial,fish farm,A,R,BK,41.8459,64.1736,14,28.6,-1.1,5650.251908,4191.355176,2960.606648
+4,Silver,4,Amu_darya,calculated,natural,river,A,A,BA,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
+3,Grass,7,Amu_darya,calculated,natural,river,A,A,GA,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
+46,Grass,6.167,Low_Volga,calculated,natural,river,AA,B,GB,48.6111,44.5933,8.6,23.3,-6.1,3922.024358,2719.282742,1731.006498
+47,Grass,1.75,Malacca,specific,artificial,ponds,AB,S,GN,2.1944,102.2486,27.3,27.8,26.8,10183.43861,8357.359875,6531.359875
+48,Silver,2,Mid_Miss,calculated,natural,river,AC,C,BB,37.9458,-89.8858,12.9,24.2,0.6,5192.310868,3652.73981,2370.378266
+49,Bighead,3,Missoui_River,calculated,natural,river,AD,D,BC,39.3148,-93.4119,12.1,24.2,-1.2,4898.758748,3444.705035,2233.651236
+52,Grass,3,Nepal,calculated,artificial,fish farm,AE,T,GO,28.4074,84.2923,10.2,15,3.9,6224.550034,4404.794749,2689.726577
+53,Bighead,5.5,North_China,calculated,artificial,pond,AF,U,BL,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
+55,Grass,5.5,North_China,calculated,artificial,pond,AF,U,GP,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
+56,Silver,4.5,North_China,calculated,artificial,both,AF,U,BL,45.9386,112.712,1.6,19,-17.7,3053.807201,2061.425297,1236.494169
+57,Bighead,6.5,NorthE_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",AG,V,BM,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
+59,Grass,6.5,NorthE_China,calculated,artificial,pond,AG,V,GQ,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
+60,Silver,5.5,NorthE_China,calculated,artificial,pond,AG,V,BM,45.5192,124.2655,4.9,22,-14.3,3602.217698,2527.267421,1604.170894
+62,Grass,6,Poland,calculated,artificial,pond,AH,W,GR,51.9515,19.9889,7.8,17.7,-3.6,3381.977899,2036.990672,1033.046389
+68,Silver,5,South_Russia,calculated,artificial,fish farm,AI,X,BN,46.5957,42.1203,10,22.8,-3,4196.012393,2864.227221,1799.405494
+70,Grass,4.5,Yangtze,calculated,natural,river,AP,E,GC,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
+72,Grass,3.5,Syr_darya,calculated,natural,river,AL,F,GD,44.1331,66.771,11.1,26.1,-4.7,4822.389416,3484.190105,2361.906645
+73,Silver,3.5,Syr_darya,calculated,natural,river,AL,F,BD,44.1331,66.771,11.1,26.1,-4.7,4822.389416,3484.190105,2361.906645
+74,Bighead,3.5,Taiwan,calculated,na,na,AM,,BO,23.8197,121.1133,12.6,15.8,8.4,6295.195053,4470.516946,2684.517875
+76,Grass,4.5,Taiwan,calculated,artificial,pond,AM,Y,GS,23.8197,121.1133,12.6,15.8,8.4,6295.195053,4470.516946,2684.517875
+77,Grass,2,Tamilnadu,calculated,artificial,ponds,AN,Z,GT,11.6267,78.5244,28.1,30.8,25,9991.786825,8165.643967,6339.50111
+84,Grass,9.5,Upp_Amur,calculated,natural,river,AO,G,GE,49.866,116.839,-1.8,17.9,-23.4,2591.555012,1688.473536,957.1846159
+87,Silver,4,Yangtze,calculated,natural,river,AP,H,BE,29.7359,107.0462,17.4,26.6,7.7,6552.174042,4736.940627,3103.042403
+30,Silver,2,Guangxi,calculated,na,na,B,,BP,24.222,109.1671,20.7,28.1,11.8,7758.178977,5936.445022,4182.824984
+67,Silver,3,South_China,calculated,natural,river,B,I,BF,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+67,Silver,2.833,South_China,calculated,artificial,both,B,AA,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+29,Silver,3,Guangdong,calculated,na,na,B,,BP,22.5981,112.5323,22.4,28.3,15.1,8446.224349,6620.673836,4808.795802
+66,Grass,3.5,South_China,calculated,natural,river,B,I,GF,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+66,Grass,3.5,South_China,calculated,artificial,pond,B,AA,GU,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+71,Grass,4,Sunchow,specific,natural,river,B,I,GF,23.3925,110.0814,20.8,27.3,12.8,8300.741581,6474.930037,4673.424971
+65,Bighead,3.5,South_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",B,AA,BP,23.2641,110.5535,21.6,28.1,13.6,8239.560059,6414.070306,4617.382095
+50,Bighead,10,Moscow,specific,artificial,fish farm,C,AB,BQ,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
+15,Grass,8.5,Cen_Russia,calculated,artificial,fish farm,C,AB,GV,55.2882,41.1226,4.6,17.8,-9.3,2849.362526,1800.881605,967.6340904
+51,Grass,10,Moscow,specific,artificial,fish farm,C,AB,GV,55.7558,37.6172,4.9,17.3,-7.9,2939.506954,1841.190361,991.8739561
+78,Bighead,6,Terek,calculated,natural,river,D,J,BG,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
+26,Grass,5,Daghestan_Terek,calculated,natural,river,D,J,GG,43.7707,47.0561,11.6,23.9,-0.6,4743.79606,3227.098571,2054.453756
+79,Grass,5,Terek,calculated,natural,river,D,J,GG,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
+80,Silver,5,Terek,calculated,natural,river,D,J,BG,43.4504,46.2264,11.7,23.9,-0.7,4479.235562,3022.422473,1888.471463
+27,Bighead,8.5,Dnieper,calculated,natural,river,E,K,BH,51.2448,30.725,7.5,18.7,-4.5,3476.98075,2223.207401,1247.228562
+39,Bighead,8.5,Kiev,specific,artificial,fish farm,E,AC,BR,50.4547,30.5238,8.1,19.2,-3.8,3698.404562,2407.936574,1395.088776
+40,Grass,8.5,Kiev,specific,artificial,fish farm,E,AC,GW,50.4547,30.5238,8.1,19.2,-3.8,3698.404562,2407.936574,1395.088776
+28,Grass,4.5,Dor,specific,artificial,pond,F,AD,GX,32.6074,34.922,20.3,26.3,13.8,7497.847148,5671.656672,3852.647104
+35,Bighead,3,Israel,calculated,na,na,F,,BS,31.4683,35.0584,17.5,23.5,10.4,7127.393497,5301.566898,3510.03078
+45,Grass,8.5,Low_Amur,calculated,natural,river,G,L,GH,48.0073,133.0803,1.6,19.9,-19.7,2979.814027,1985.386442,1166.177139
+44,Grass,9.5,Leninskoye,specific,natural,river,G,L,GH,47.9297,132.6499,1.9,20.1,-19.3,3079.462148,2074.114758,1235.688509
+63,Bighead,6,Romania,calculated,artificial,pond (requested),H,AE,BT,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
+64,Grass,6.5,Romania,calculated,na,na,H,,GY,45.8419,25.5195,8.1,17.6,-2.7,2832.182061,1632.541383,746.6624766
+1,Grass,3,Alabama,calculated,na,na,I,,GZ,32.3508,-87.0124,18.2,27,9.1,6932.939344,5148.685472,3512.437469
+6,Grass,8.357,Amur_river,calculated,natural,river,J,M,GI,53.2024,124.9597,-3.1,17,-25.4,2389.377077,1525.58232,831.3771999
+7,Silver,6.375,Amur_river,calculated,natural,river,J,M,BI,53.2024,124.9597,-3.1,17,-25.4,2389.377077,1525.58232,831.3771999
+8,Grass,3.5,Arkansas,calculated,artificial,fish farm,K,AF,GAA,35.4877,-92.2701,14.9,25.2,3.7,6021.899695,4349.709868,2904.060007
+9,Grass,5,Balkhash,calculated,natural,lake,L,N,GJ,45.7665,74.2302,7.7,23.1,-8.9,4079.947573,2897.774657,1880.699899
+11,Grass,3.5,Balyktchy ,calculated,artificial,fish farm,M,AG,GAB,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
+12,Silver,3.5,Balyktchy fish farm; vicinity of Tashkent,calculated,artificial,farm,M,AG,BU,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
+10,Bighead,4.5,Balyktchy ,calculated,artificial,fish farm,M,AG,BU,41.3,69.2667,14.7,26.4,2.8,5658.168911,4055.17702,2699.131044
+14,Silver,4.5,Cen_China,calculated,na,na,N,,BV,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
+13,Bighead,4.5,Cen_China,calculated,artificial,"two sources, one from pond, one still try to find the original references",N,AH,BV,31.2257,112.4966,16.5,27.3,5,6188.022786,4460.400063,3002.99433
+19,Silver,3.5,CenE_China,calculated,artificial,pond,O,AI,BW,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
+18,Grass,4.5,CenE_China,calculated,artificial,pond,O,AI,GAC,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
+16,Bighead,5,CenE_China,calculated,artificial,pond,O,AI,BW,32.3309,116.3841,15.9,27.3,3.8,6001.239111,4319.675244,2918.370744
+20,Grass,4,CenSouth_China,calculated,na,na,P,,GAD,25.7597,111.1713,16.9,26.1,6.8,6424.524932,4658.664045,3104.196636
+21,Grass,3.5,CenSouth_Russia,calculated,artificial,pond,Q,AJ,GAE,53.2293,43.4146,4.7,18.6,-9.8,2951.964856,1909.823588,1061.735868
+22,Silver,2,Cuba,calculated,na,waterbodies,R,,BX,21.5079,-77.8094,25.3,27.4,22.5,9515.247063,7689.104206,5862.961348
+24,Grass,3,Cuttack,specific,artificial,pond,S,AK,GAF,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
+25,Silver,3,Cuttack,specific,artificial,pond,S,AK,BY,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
+23,Bighead,3,Cuttack,specific,artificial,pond,S,AK,BY,20.4625,85.883,27.6,31.7,22.8,10112.93957,8286.796716,6460.653859
+32,Silver,5.5,Heilongjiang,calculated,na,na,T,,BZ,49.6142,127.9869,0.5,19.2,-21,2932.709895,1962.413358,1160.191709
+34,Grass,6.5,Hungary,calculated,na,na,V,,GAG,47.3371,19.5343,10.4,19.9,-0.1,4178.685372,2723.350859,1570.708516
+36,Silver,3.5,Jiangsu,calculated,na,na,W,,BAA,33.0743,119.5496,14.8,26.3,2.8,5700.953814,4053.197194,2699.525026
+37,Grass,4,Kapchagay ,calculated,natural,river (reservoir),X,O,GK,43.921,77.0974,8.2,21.8,-6.5,4592.134396,3250.387022,2126.244048
+38,Grass,8.5,Khabarovsk,specific,natural,river,Y,P,GL,50.6966,137.7157,-0.1,16.8,-19.7,2531.346922,1616.687889,882.6675908
+42,Grass,4.75,Krasnodar,specific,artificial,pond,Z,AL,GAH,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
+41,Bighead,4.5,Krasnodar,specific,natural,river,Z,Q,BJ,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
+41,Bighead,5,Krasnodar,specific,artificial,fish farm,Z,AL,BAB,45.0448,38.976,11.6,22.3,1.1,4717.598292,3200.768286,1989.002356
