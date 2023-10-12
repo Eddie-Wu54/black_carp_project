@@ -38,12 +38,12 @@ wt2 <- brick("futureStream/E2O_hist_1986_1995.nc", varname = "waterTemperature")
 wt3 <- brick("futureStream/E2O_hist_1996_2005.nc", varname = "waterTemperature")
 
 # Include all the temperature data in one data frame
-weeklyWater <- extract(wt1, locations.spatial)
+weeklyWater <- extract(wt2, locations.spatial)
 weeklyWater <- cbind(weeklyWater, extract(wt2, locations.spatial))
 weeklyWater <- cbind(weeklyWater, extract(wt3, locations.spatial))
 
 # Change from Kelvin to Celsius
-M.weeklyWater <- weeklyWater - 273.15
+M.weeklyWater <- weeklyWater - 273.15 # should have 1040 columns of data
 
 
 
@@ -51,27 +51,27 @@ M.weeklyWater <- weeklyWater - 273.15
 
 ## Create two data frames to store the average water temperature data, 
 # standard deviation, max, and min for each week of the year (1979-2005)
-week.avg <- matrix(NA, 12, 52)
-week.me <- matrix(NA, 12, 52)
-week.max <- matrix(NA, 12, 52)
-week.min <- matrix(NA, 12, 52)
+week.avg <- matrix(NA, 14, 52)
+week.me <- matrix(NA, 14, 52)
+week.max <- matrix(NA, 14, 52)
+week.min <- matrix(NA, 14, 52)
 confidence_level <- 0.95
 
-# Use two for loops to calculate the average for each week over 27 years
+# Use two for loops to calculate the average for each week over 20 years
 for (i in 1:52) { # i index which week
   
   # sub setting that week for each year
   subset <- data.frame(M.weeklyWater[,i])
   
-  for (j in 1:26) { # j index which year
+  for (j in 1:19) { # j index which year
     subset <- cbind(subset, M.weeklyWater[,i+52*j])
-  } # now "subset" is a data frame that contains the 27-year temperature data for week i
+  } # now "subset" is a data frame that contains the 20-year temperature data for week i
   
   # Calculate the mean
-  week.avg[,i] <- rowSums(subset)/27
+  week.avg[,i] <- rowSums(subset)/20
   # Calculate the margin of error (for confidence interval)
-  for (y in 1:12) { # y index each location
-    standard_error <- sd(subset[y,]) / sqrt(27)
+  for (y in 1:14) { # y index each location
+    standard_error <- sd(subset[y,]) / sqrt(20)
     week.me[y,i] <- abs(qnorm((1 - confidence_level) / 2)) * standard_error
   }
   # Calculate the max and min
@@ -84,11 +84,11 @@ for (i in 1:52) { # i index which week
 #### Save each location separately ####
 # Clean the data so that we have a data frame for each river location
 
+
 ## St Louis River ##
 time <- seq(from=1, to=52)
 st.louis.mod <- as.data.frame(t(rbind(time, week.avg[1,], week.me[1,],
                                       week.max[1,], week.min[1,])))
-
 
 # Add the lower and upper confidence intervals
 st.louis.mod <- cbind(st.louis.mod, st.louis.mod$V2 - st.louis.mod$V3)
@@ -233,14 +233,33 @@ colnames(humber.mod) <- c("weeks", "temperature.avg", "temperature.me",
 write.csv(humber.mod, "water temperature clean/humber_model.csv")
 
 
+## Long Point (Inner Bay) ##
+lp.mod <- as.data.frame(t(rbind(time, week.avg[13,], week.me[13,],
+                                    week.max[13,], week.min[13,])))
 
-## Plotting
-ggplot(st.louis, aes(x = weeks, y = temperature.avg))+
-  geom_line(size = 1)+
-  geom_line(aes(x = weeks, y = lower.CI), color = "blue", alpha = 0.5)+
-  geom_line(aes(x = weeks, y = upper.CI), color = "blue", alpha = 0.5)+
-  theme_bw()
-  
+lp.mod <- cbind(lp.mod, lp.mod$V2 - lp.mod$V3)
+lp.mod <- cbind(lp.mod, lp.mod$V2 + lp.mod$V3)
+colnames(lp.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                          "max", "min", "lower.CI", "upper.CI")
+
+write.csv(lp.mod, "water temperature clean/lp_model.csv")
+
+
+## Port Dover ##
+portdover.mod <- as.data.frame(t(rbind(time, week.avg[14,], week.me[14,],
+                                    week.max[14,], week.min[14,])))
+
+portdover.mod <- cbind(portdover.mod, portdover.mod$V2 - portdover.mod$V3)
+portdover.mod <- cbind(portdover.mod, portdover.mod$V2 + portdover.mod$V3)
+colnames(portdover.mod) <- c("weeks", "temperature.avg", "temperature.me",
+                          "max", "min", "lower.CI", "upper.CI")
+
+write.csv(portdover.mod, "water temperature clean/portdover_model.csv")
+
+
+
+
+
 
 
 ## Notes for the for loops
@@ -263,10 +282,6 @@ M.weeklyWater[,52] # j = 0
 M.weeklyWater[,52 + 52*(1)] # j = 1
 M.weeklyWater[,52 + 52*(2)] # j = 2
 M.weeklyWater[,52 + 52*(25)] # j = 3
-
-
-
-
 
 
 
