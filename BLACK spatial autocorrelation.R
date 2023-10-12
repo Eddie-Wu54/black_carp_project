@@ -51,9 +51,12 @@ lm.annual <- lm(log(carp.r$AAM)~carp.r$AnnualTemp) # Annual temperature
 lm.cold <- lm(log(carp.r$AAM)~carp.r$ColdTemp) # Cold temperature
 lm.warm <- lm(log(carp.r$AAM)~carp.r$WarmTemp) # Warm temperature
 lm.gdd <- lm(log(carp.r$AAM)~carp.r$average_gdd_0) # Growing degree day
+
 summary(lm.annual)
 summary(lm.cold)
+summary(lm.warm) # no significant relationship there
 summary(lm.gdd)
+
 
 # Run the Moran.I test on the residuals
 Moran.annual <- Moran.I(lm.annual$residuals, dists)
@@ -64,13 +67,10 @@ Moran.annual
 Moran.cold
 Moran.gdd
 
-summary(lm.annual)
-summary(lm.cold)
-summary(lm.warm) # no significant relationship there
 
 
 
-#### Local moran's test (correlog plot) ####
+#### Local moran's test (entire dataset) ####
 
 ## For annual temperature
 png("annual residuals corr.png", width= 2404, height= 1600, units="px", res = 300)
@@ -141,10 +141,31 @@ plot(vario, lzn.fit) # plot the sample values, along with the fit model
 
 
 
-#### Local moran's I after removing the SU data point ####
+#### Local moran's test after removing the SU data point ####
 carp.r.c <- carp.r %>% filter(!row_number() == 20)
 
 ## For annual temperature
+png("annual residuals corr SU removal.png", width= 2404, height= 1600, units="px", res = 300)
+par(mfrow=c(2,1),mar=c(4,4,2,2))
+lm.annual <- lm(log(carp.r.c$AAM)~carp.r.c$AnnualTemp)
+
+# Use the coorelog function to develop the relationship
+test <- correlog(carp.r.c$longitude, carp.r.c$latitude, lm.annual$residuals,
+                 increment=50, resamp=500, latlon=T)
+
+# Plot with the entire distance range
+plot(test, main="Annual Average Temperature Regression Residuals Without South Ukraine")
+abline(h=0)
+
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
+
+dev.off()
+
+
+## For cold temperature
+png("cold residuals corr SU removal.png", width= 2404, height= 1600, units="px", res = 300)
 par(mfrow=c(2,1),mar=c(4,4,2,2))
 lm.cold <- lm(log(carp.r.c$AAM)~carp.r.c$ColdTemp)
 
@@ -153,68 +174,41 @@ test <- correlog(carp.r.c$longitude, carp.r.c$latitude, lm.cold$residuals,
                  increment=50, resamp=500, latlon=T)
 
 # Plot with the entire distance range
-plot(test, main="Cold Quarter Temperature Regression Residuals - Removal")
+plot(test, main="Cold Quarter Temperature Regression Residuals Without South Ukraine")
 abline(h=0)
-text(17400, min(test$correlation)+1, "A", cex=1.5)
 
 # Reduce the distance range to 2500 km
 plot(test, main="", xlim=c(0,2500))
 abline(h=0)
-text(2500, min(test$correlation)+1, "B", cex=1.5)
+
+dev.off()
 
 
 
+#### Local moran's test for the interaction model ####
+
+# Define the models
+lm.annual.int <- lm(log(AAM)~AnnualTemp*condition, data = carp.r.c) # Annual temperature
+lm.cold.int <- lm(log(AAM)~ColdTemp*condition, data = carp.r.c) # Cold temperature
+
+summary(lm.annual.int)
+summary(lm.cold.int)
 
 
+## Correlogram for cold temperature
+png("cold residuals corr interaction.png", width= 2404, height= 1600, units="px", res = 300)
+par(mfrow=c(2,1),mar=c(4,4,2,2))
 
+# Use the coorelog function to develop the relationship
+test <- correlog(carp.r.c$longitude, carp.r.c$latitude, lm.cold.int$residuals,
+                 increment=50, resamp=500, latlon=T)
 
+# Plot with the entire distance range
+plot(test, main="Cold Quarter Temperature Regression Residuals Without South Ukraine")
+abline(h=0)
 
-## Some weird codes
+# Reduce the distance range to 2500 km
+plot(test, main="", xlim=c(0,2500))
+abline(h=0)
 
-# Create a data frame of the coordinates and AAM data
-data.spatial <- data.frame(data = carp.r$AAM,
-                     longitude=location$Longitude, latitude=location$Latitude)
-
-# Convert to spatial object
-coordinates(data.spatial) <- c("longitude", "latitude")
-proj4string(data.spatial) <- CRS("+proj=longlat +datum=WGS84")
-
-
-geo <- as.matrix(cbind(carp.r$longtitude, carp.r$latitude))
-
-
-## Find the nearest neighbor distance for each location
-nearest_distances <- apply(dists, 1, function(row) min(row[row > 0]))
-nearest_distances
-
-threshold <- nearest_distances[14]
-# The threshold value is the minimum distance that gives each point
-# at least one neighbor.
-
-
-## Compute distance-band weights
-# (Both methods give the same result)
-
-# METHOD 1: Using the spatial object for calculation
-dist.band <- dnearneigh(data.spatial, d1 = 0, d2 = 9000)
-summary(dist.band)
-
-# METHOD 2: Using purely the geographical coordinates for calculation
-dist.band.geo <- dnearneigh(geo, d1 = 0, d2 = 9000, longlat = TRUE)
-summary(dist.band.geo)
-
-nb <- nb2listw(dist.band, style="W")
-nb
-## {Problem of using what distance as identifying the neareast neightbouring?}
-
-
-## Conduct the local moran's test
-
-Lmoran.annual <- localmoran(carp.r$AAM, nb, zero.policy = TRUE)
-
-# View the local moran I values and results
-Lmoran.annual
-summary(Lmoran.annual, geo)
-
-# See the p value for the 20 locations
-hist(Lmoran.annual[,5])
+dev.off()
