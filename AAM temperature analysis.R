@@ -2,7 +2,7 @@
 #' normal temperature metrics (Annual temp, Cold temp, Warm temp, Water temperature).
 
 #' This script also investigates whether the results will be any different if
-#' the entire dataset is categrized by Conditions or sex.
+#' the entire dataset is categorized by Conditions or sex.
 
 library(ggplot2)
 library(ggfortify)
@@ -171,57 +171,11 @@ summary(temp.sex)
 anova(temp.sex)
 
 
-## Plot the entire  dataset with different sex categories
+## Plot the entire dataset with different sex categories
 ggplot(carp, aes(x = AnnualTemp, y = log(AAM), color = sex))+
   geom_point()+
   geom_smooth(method = "lm")+
   theme_bw()
-
-
-
-#### Include spatial autocorrelation in the analysis using sub-sampling ####
-
-## Create a data frame to store the final results
-results.final <- matrix(NA,1,6)
-colnames(results.final) <- c("slope.artificial", "intercept.artificial", 
-                             "slope.natural", "intercept.natural",
-                             "p value", "R^2")
-
-## Create a matrix to store the results over the sub-sampling
-results.raw <- matrix(NA,100,6)
-colnames(results.raw) <- c("slope.artificial", "intercept.artificial", 
-                           "slope.natural", "intercept.natural",
-                           "p value", "R^2")
-
-
-## Sub-sampling to avoid spatial autocorrelation
-table(carp.f$spatial.code)
-
-# Sub-sample and run regression for 1000 times
-for(i in 1:nrow(results.raw)) {
-  # sub-sample by location
-  sub <- carp.f %>% group_by(spatial.code) %>% sample_n(size=1)
-  # run regression
-  reg <- lm(log(sub$AAM)~sub$AnnualTemp*sub$condition)
-  values <- summary(reg)
-  results.raw[i,1]<-values$coef[2,1] # slope for artificial
-  results.raw[i,2]<-values$coef[1,1] # intercept for artificial
-  results.raw[i,3]<-values$coef[2,1] + values$coef[4,1] # slope for natural
-  results.raw[i,4]<-values$coef[1,1] + values$coef[3,1] # intercept for natural
-  results.raw[i,5]<-values$coef[2,4] # p value
-  results.raw[i,6]<-values$adj.r.squared # R2
-}
-
-# Take the mean of only the unique possibilities for slope, intercept, R2
-results.final[1,1] <- mean(unique(results.raw[,"slope.artificial"]))
-results.final[1,2] <- mean(unique(results.raw[,"intercept.artificial"]))
-results.final[1,3] <- mean(unique(results.raw[,"slope.natural"]))
-results.final[1,4] <- mean(unique(results.raw[,"intercept.natural"]))
-results.final[1,6] <- mean(unique(results.raw[,"R^2"]))
-
-# Count the number of times when p value is greater than 0.05
-results.final[1,5] <- sum(results.raw[,"p value"] > 0.05)
-
 
 
 
