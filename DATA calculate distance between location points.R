@@ -23,7 +23,7 @@ View(loc)
 
 
 ## Calculate the distance
-# Create a matrix of 20*20 for 20 locations
+# Create a matrix of 23*23 for 23 locations
 M <- matrix(NA, nrow(loc), nrow(loc))
 colnames(M) <- loc$Location
 rownames(M) <- loc$Location
@@ -39,7 +39,10 @@ View(M)
 write.csv(M, file="location_distance.csv")
 
 
-# Make a matrix to store only the distances we care about
+
+#### Calculate the distance within 250km ####
+
+## Make a matrix to store only the distances we care about
 N <- matrix(NA,nrow(loc),nrow(loc))
 colnames(N) <- loc$Location
 rownames(N) <- loc$Location
