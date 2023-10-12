@@ -1,33 +1,33 @@
-Location,Latitude,Longitude
-Amur river,53.2024,124.9597
-Ha’Maapil,32.3778,34.9833
-Ha’Maapil,32.3778,34.9833
-Hukou county,29.7437,116.2202
-Hukou county,29.7437,116.2202
-Leninskoye,47.9297,132.6499
-Nucet_farm,44.8,25.55
-South Ukraine,47.3188,33.6678
-South Ukraine,47.3188,33.6678
-Taiwan,23.8197,121.1133
-Taiwan,23.8197,121.1133
-Turkmenistan,37.7505,64.5666
-Chang River (excluding Hukou),29.7359,107.0462
-Chang River (excluding Hukou),29.7359,107.0462
-Chang River (excluding Hukou),29.7359,107.0462
-Hunan,27.5603,111.3726
-Hunan,27.5603,111.3726
-Taihu Lake,31.2236,120.2544
-Hongze Lake,33.2718,118.636
-Heilong Jiang,48.2861,128.0737
-Hongshuihe River,25.1692,106.6492
-Central China,32.3309,116.3841
-Northern China,45.9386,112.712
-Northern eastern China,45.5192,124.2655
-Mississippi River,35.5972,-90.0131
-Mississippi River,35.5972,-90.0131
-Daihai,40.5787,112.693
-Ganjiang,27.8423,115.4016
-Pingjiang County,28.7673,113.7156
-Pingjiang County,28.7673,113.7156
-Biliuhe Reervior,39.8511,122.5169
-Shixing County (Guangdong),24.7908,114.1026
+Location,Latitude,Longitude,china
+Amur river,53.2024,124.9597,y
+Biliuhe Reervior,39.8511,122.5169,y
+Central China,32.3309,116.3841,y
+Chang River (excluding Hukou),29.7359,107.0462,y
+Chang River (excluding Hukou),29.7359,107.0462,y
+Chang River (excluding Hukou),29.7359,107.0462,y
+Daihai,40.5787,112.693,n
+Ganjiang,27.8423,115.4016,y
+Ha’Maapil,32.3778,34.9833,n
+Ha’Maapil,32.3778,34.9833,n
+Heilong Jiang,48.2861,128.0737,y
+Hongshuihe River,25.1692,106.6492,y
+Hongze Lake,33.2718,118.636,y
+Hukou county,29.7437,116.2202,y
+Hukou county,29.7437,116.2202,y
+Hunan,27.5603,111.3726,y
+Hunan,27.5603,111.3726,y
+Leninskoye,47.9297,132.6499,n
+Mississippi River,35.5972,-90.0131,n
+Mississippi River,35.5972,-90.0131,n
+Northern China,45.9386,112.712,y
+Northern eastern China,45.5192,124.2655,y
+Nucet_farm,44.8,25.55,n
+Pingjiang County,28.7673,113.7156,y
+Pingjiang County,28.7673,113.7156,y
+Shixing County (Guangdong),24.7908,114.1026,y
+South Ukraine,47.3188,33.6678,n
+South Ukraine,47.3188,33.6678,n
+Taihu Lake,31.2236,120.2544,y
+Taiwan,23.8197,121.1133,n
+Taiwan,23.8197,121.1133,n
+Turkmenistan,37.7505,64.5666,n
