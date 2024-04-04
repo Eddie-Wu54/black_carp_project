@@ -1,0 +1,85 @@
+---
+title: "Predicting age at maturity in black carp"
+author: "Eddie Wu"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+We used different temperature metrics to predict black carp age at maturity.
+Simple linear regression model was used for all metrics.
+
+
+1. Annual average temperature.
+**(obtained from the WORLDCLIM dataset BIO1)**
+**(1970 - 2000)**
+
+2. Cold quarter temperature.
+**(obtained from the WORLDCLIM dataset BIO11)**
+**(1970 - 2000)**
+
+3. Warm quarter temperature.
+**(obtained from the WORLDCLIM dataset BIO10)**
+**(1970 - 2000)**
+
+4. Growing degree day Base 0.
+**(calculated from CPC Global Daily Temperature)**
+**(1979 - 2022)**
+
+5. Winter duration
+**(calculated from CPC Global Daily Temperature)**
+**(1979 - 2022)**
+
+6. Annual water temperature.
+**(averaged weekly water temperature calculated from futureStream database)**
+**(1979 - 2005)**
+
+7. Cold quarter water temperature.
+**(averaged weekly water temperature calculated from futureStream database)**
+**(1979 - 2005)**
+
+Both water temperature metrics using the calculation method in the WorldClim database in terms of "annual" and "cold quarter". (package dismo)
+
+
+## Predict black carp age at maturity
+```{r data import, message=FALSE, warning=FALSE}
+library(car)
+library(dplyr)
+
+## Import data
+Black <- read.csv("eddie_carp_new.csv")
+Black$condition <- as.factor(Black$condition)
+
+# Clean data
+Black <- Black %>% filter(!row_number() == 5) %>% filter(sex != "male")
+
+# Remove the South Ukraine data point
+black.clean <- Black %>% filter(!row_number() == 20)
+```
+
+```{r AAM prediction}
+black.annual <- lm(log(AAM)~AnnualTemp, data = black.clean)
+black.cold <- lm(log(AAM)~ColdTemp, data = black.clean)
+black.warm <- lm(log(AAM)~WarmTemp, data = black.clean)
+black.gdd <- lm(log(AAM)~average_gdd_0, data = black.clean)
+black.below5 <- lm(log(AAM)~below5, data = black.clean)
+black.water <- lm(log(AAM)~WaterTemp, data = black.clean)
+black.coldwater <- lm(log(AAM)~WaterCold, data = black.clean)
+
+
+summary(black.annual)
+summary(black.cold)
+summary(black.warm)
+summary(black.gdd)
+summary(black.below5)
+summary(black.water)
+summary(black.coldwater)
+
+
+plot(black.annual, which=5)
+```
