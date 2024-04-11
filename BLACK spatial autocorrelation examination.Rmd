@@ -535,6 +535,16 @@ water.int <- lm(log(AAM)~WaterTemp*condition, data = carp.new)
 waterC.lin <- lm(log(AAM)~WaterCold, data = carp.new)
 waterC.add <- lm(log(AAM)~WaterCold+condition, data = carp.new)
 waterC.int <- lm(log(AAM)~WaterCold*condition, data = carp.new)
+
+# Define the models for days_below5
+below5.lin <- lm(log(AAM)~below5, data = carp.new)
+below5.add <- lm(log(AAM)~below5+condition, data = carp.new)
+below5.int <- lm(log(AAM)~below5*condition, data = carp.new)
+
+# Define the models for days_below5_3d
+below5.3d.lin <- lm(log(AAM)~below5_3days, data = carp.new)
+below5.3d.add <- lm(log(AAM)~below5_3days+condition, data = carp.new)
+below5.3d.int <- lm(log(AAM)~below5_3days*condition, data = carp.new)
 ```
 
 ### Global Moran.I
@@ -657,6 +667,42 @@ global.moran.waterC <- data.frame(
 )
 
 kable(global.moran.waterC)
+
+# days below 5 for 5
+Moran.below5.lin <- Moran.I(below5.lin$residuals, dists)
+Moran.below5.add <- Moran.I(below5.add$residuals, dists)
+Moran.below5.int <- Moran.I(below5.int$residuals, dists)
+
+global.moran.below5 <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.below5.lin$observed, Moran.below5.add$observed,
+               Moran.below5.int$observed),
+  Expected = c(Moran.below5.lin$expected, Moran.below5.add$expected,
+               Moran.below5.int$expected),
+  sd = c(Moran.below5.lin$sd, Moran.below5.add$sd, Moran.below5.int$sd),
+  p.value = c(Moran.below5.lin$p.value, Moran.below5.add$p.value,
+              Moran.below5.int$p.value)
+)
+
+kable(global.moran.below5)
+
+# days below 5 for 3
+Moran.below53.lin <- Moran.I(below5.3d.lin$residuals, dists)
+Moran.below53.add <- Moran.I(below5.3d.add$residuals, dists)
+Moran.below53.int <- Moran.I(below5.3d.int$residuals, dists)
+
+global.moran.below53 <- data.frame(
+  Model = c("simple linear", "linear additive", "interaction"),
+  Observed = c(Moran.below53.lin$observed, Moran.below53.add$observed,
+               Moran.below53.int$observed),
+  Expected = c(Moran.below53.lin$expected, Moran.below53.add$expected,
+               Moran.below53.int$expected),
+  sd = c(Moran.below53.lin$sd, Moran.below53.add$sd, Moran.below53.int$sd),
+  p.value = c(Moran.below53.lin$p.value, Moran.below53.add$p.value,
+              Moran.below53.int$p.value)
+)
+
+kable(global.moran.below53)
 ```
 
 There is no global spatial autocorrelation on the entire dataset for all six temperature metrics.
@@ -694,6 +740,16 @@ plot_correlog(water.int)
 plot_correlog(waterC.lin)
 plot_correlog(waterC.add)
 plot_correlog(waterC.int)
+
+## below5 for 5
+plot_correlog(below5.lin)
+plot_correlog(below5.add)
+plot_correlog(below5.int)
+
+## below5 for 3
+plot_correlog(below5.3d.lin)
+plot_correlog(below5.3d.add)
+plot_correlog(below5.3d.int)
 ```
 
 
