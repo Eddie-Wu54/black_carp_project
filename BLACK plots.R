@@ -5,18 +5,19 @@
 #' annual growing degree days.
 
 
-library(tidyverse)
-library(ggplot2)
-library(gridExtra)
-library(ggtext)
-library(ggpubr)
-library(grid)
-library(rnaturalearth)
-library(sf)
-library(raster)
-library(maptools) #to get the country outlines
-library(scales) #ggplot2 scales and legends
-
+{
+  library(tidyverse)
+  library(ggplot2)
+  library(gridExtra)
+  library(ggtext)
+  library(ggpubr)
+  library(grid)
+  library(rnaturalearth)
+  library(sf)
+  library(raster)
+  library(maptools) #to get the country outlines
+  library(scales) #ggplot2 scales and legends
+}
 
 
 
@@ -43,11 +44,11 @@ asian.clean <- Asian %>%
 
 #### The four figure captions ####
 figure1.cap <- "Figure 1. Distribution of locations that reported Black Carp age at sexual maturity and mean air temperature of the coldest quarter from 1970-2000 (obtained from the WORLDCLIM dataset; Fick & Hijmans, 2017). A data point in the Mississippi River is not shown."
-figure2.cap <- "Figure 2. Winter duration as the best predictor of Black Carp age at sexual maturity F<sub>20,1</sub> = 16.31, p = 6.4*10<sup>-4</sup>, adj.R<sup>2</sup> = 0.42. Dashed lines represent 95% confidence intervals."
-figure3.cap <- paste("Figure 3. Linear regression of Black Carp and grouped other Asian Carp species using average air temperature from the",
-                     "coldest quarter (A), and Base 0 annual average degree days (B). Black and solid lines represent Black Carp and green",
-                     "dashed lines represent other Asian carps. Shaded areas are 95% confidence intervals. Slope, intercept, and confidence",
-                     "intervals for grouped other Asian Carp species are average values from 1000 iterations.", sep = "\n")
+figure2.cap <- "Figure 2. Winter duration as the best predictor of Black Carp age at sexual maturity F<sub>20,1</sub> = 16.31, p = 6.4e-4, adj.R<sup>2</sup> = 0.42. Dashed lines represent 95% confidence intervals."
+figure3.cap <- paste("Figure 3. Linear regression of Black Carp and other Asian Carp species using average air temperature from the coldest",
+                     "quarter (A), and base 0 annual average degree days (B). Black solid lines represent Black Carp and green dashed lines",
+                     "represent other Asian carps. Shaded areas are 95% confidence intervals. Slope, intercept, and confidence intervals for",
+                     "other Asian Carp species are average values from 1000 iterations.", sep = "\n")
 figureA1.cap <- paste("Figure A1. Linear regression of Black Carp using annual average temperature (A), and annual average temperature from",
                       "the coldest quarter (B). Solid circles and lines represent air temperature; while empty triangles and dashed lines represent",
                       "water temperature.", sep = "\n")
@@ -232,7 +233,7 @@ dev.off()
 #### Figure 2 - Best predictor of Black carp - Winter Duration ####
 #' Relationship between winter duration and log(AAM)
 #' show the old and new data points
-png("figure 2_black carp winter duration.png", width= 1800, height= 1700, units="px", res = 300)
+png("figure 2_black carp winter duration.png", width= 1900, height= 1650, units="px", res = 300)
 
 # legends
 symbol_types <- c("old"=2, "new"=16)
@@ -251,17 +252,17 @@ ggplot(black.clean)+
   theme_classic()+
   scale_shape_manual(name="", values=symbol_types,
                      labels=c("newly added data",
-                              "obtained from Nico et al. (2005), 
+                              "data obtained from Nico et al. (2005), 
                               \nBrook et al. (2023)"))+
   theme(axis.title = element_text(size = 15),
         axis.text = element_text(size = 12),
-        legend.justification=c(0,0), legend.position=c(0.5,0.1),
+        legend.justification=c(0,0), legend.position=c(0.48,0.1),
         legend.text = element_text(size = 11, lineheight = 0.5),
         legend.key.height = unit(0.75, "cm"),
-        legend.background = element_blank(),
+        legend.background = element_blank(), #make background transparent
         plot.caption = element_textbox_simple(size = 12, lineheight = 1.5,
                                     margin = margin(t = 12)), # move caption away from plot
-        plot.caption.position = "plot") # make background transparent
+        plot.caption.position = "plot")
 
 dev.off()
 
@@ -272,7 +273,7 @@ dev.off()
 #' Two panel graph
 #' Cold quarter temperature, GDD0
 #' Asian carp, Black carp, with confidence interval
-png("figure 3_black asian compare.png", width= 2800, height= 1460, units="px", res = 300)
+png("figure 3_black asian compare.png", width= 2700, height= 1480, units="px", res = 300)
 
 # legends
 color_types <- c("Black"="black", "Asian"="#5BA300")
@@ -297,7 +298,7 @@ cold_temperature <- ggplot()+
               fill="#5BA300", alpha=0.3)+
   labs(x = "Coldest quarter average air temperature (°C)", y = "In Age at maturity")+
   annotate("text", x = 22, y = 2.5, color = "black", size = 7,
-           label = "A")+ # figure number
+           label = "A")+ #figure number
   theme_classic()+
   xlim(-25.4, 26.8)+
   ylim(0.6,2.5)+
@@ -309,8 +310,8 @@ cold_temperature <- ggplot()+
         axis.text = element_text(size = 12),
         legend.justification=c(0,0), legend.position=c(0.05,0.1),
         legend.text = element_text(size = 15),
-        legend.background = element_blank(),
-        plot.margin = margin(b=12)) # make background transparent
+        legend.background = element_blank(),  #make background transparent
+        plot.margin = margin(b=12,l=10,t=10)) 
 
 cold_temperature
 
@@ -331,7 +332,7 @@ gdd <- ggplot(black.clean)+
   geom_ribbon(data=ci.gdd, aes(x=average_gdd_0,
                                 ymin=SumCI.lwr/1000, ymax=SumCI.upr/1000),
               fill="#5BA300", alpha=0.3)+
-  labs(x = "Base 0 annual average degree days", y = "")+
+  labs(x = "base 0 annual average degree days", y = "")+
   annotate("text", x = 9500, y = 2.5, color = "black", size = 7,
            label = "B")+ # figure number
   theme_classic()+
@@ -346,7 +347,7 @@ gdd <- ggplot(black.clean)+
         legend.justification=c(0,0), legend.position=c(0.05,0.1),
         legend.text = element_text(size = 15),
         legend.background = element_blank(),
-        plot.margin = margin(b=12)) # make background transparent
+        plot.margin = margin(b=12,r=10,t=10)) # make background transparent
 
 gdd
 
@@ -363,8 +364,7 @@ dev.off()
 
 #### Figure A1 - Comparing black carp AIR and WATER temperature ####
 #' This plot is to compare using air or water temperature on two temp scales
-
-png("figure A1_air water compare.png", width= 2800, height= 1460, units="px", res = 300)
+png("figure A1_air water compare.png", width= 2750, height= 1480, units="px", res = 300)
 
 # Legends
 symbol_types <- c("AirTemp"=16, "WaterTemp"=2)
@@ -378,7 +378,7 @@ annual_p <- ggplot(black.clean)+
   # annual water temp
   geom_point(size=4, aes(x=WaterTemp, y=log(AAM), shape="WaterTemp"))+
   geom_line(data=pred.water, aes(WaterTemp, fit, linetype="WaterTemp"), size=1)+ # prediction line
-  labs(x = "Annual Average Temperature (°C)", y = "In Age at Maturity")+
+  labs(x = "Annual average temperature (°C)", y = "In Age at maturity")+
   annotate("text", x = 20, y = 2.2, color = "black", size = 7,
            label = "A")+ # figure number
   theme_classic()+
@@ -391,7 +391,7 @@ annual_p <- ggplot(black.clean)+
         legend.justification=c(0,0), legend.position=c(0.05,0.1),
         legend.text = element_text(size = 15),
         legend.background = element_blank(),
-        plot.margin = margin(b=12)) # make background transparent
+        plot.margin = margin(b=12,t=10,l=10)) # make background transparent
 
 annual_p
 
@@ -404,7 +404,7 @@ cold_p <- ggplot(black.clean)+
   # annual water temp
   geom_point(size=4, aes(x=WaterCold, y=log(AAM), shape="WaterTemp"))+
   geom_line(data=pred.waterC, aes(WaterCold, fit, linetype="WaterTemp"), size=1)+ # prediction line
-  labs(x = "Coldest Quarter Average Temperature (°C)", y = "In Age at Maturity")+
+  labs(x = "Coldest quarter average temperature (°C)", y = "")+
   annotate("text", x = 12, y = 2.2, color = "black", size = 7,
            label = "B")+ # figure number
   theme_classic()+
@@ -417,10 +417,9 @@ cold_p <- ggplot(black.clean)+
         legend.justification=c(0,0), legend.position=c(0.05,0.1),
         legend.text = element_text(size = 15),
         legend.background = element_blank(),
-        plot.margin = margin(b=12)) # make background transparent
+        plot.margin = margin(b=12,t=10,r=10)) # make background transparent
 
 cold_p
-
 
 # Caption
 cap <- textGrob(figureA1.cap, just = "left", x=0,
