@@ -1,4 +1,4 @@
-ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Code_Str,Code_Sp,Latitude,Longitude,AnnualTemp,WarmTemp,ColdTemp,AnnualDD,AnnualDD.5,AnnualDD.10
+ID,Species,AAM,Loc,Loc_type,Condition,habitat,Code,Code_Str,Code_Sp,Latitude,Longitude,AnnualTemp,WarmTemp,ColdTemp,average_gdd_0,AnnualDD.5,AnnualDD.10
 2,Bighead,4,Amu_darya,calculated,natural,river,A,A,BA,40.5924,62.1156,14.2,27.6,0.4,5506.544308,3996.219442,2742.863303
 81,Bighead,4,Turkmen,calculated,artificial,fish farm,A,R,BK,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
 83,Grass,3.5,Turkmen,calculated,artificial,fish farm,A,R,GM,39.145,60.1958,15.5,28.5,2.2,6278.734201,4650.34627,3287.759726
