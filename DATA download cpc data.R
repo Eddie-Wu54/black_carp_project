@@ -1,3 +1,8 @@
+#' This script is used to:
+#' 
+#' Get CPC data from the url.
+
+
 library(ncdf4)
 library(sp)
 library(raster)
