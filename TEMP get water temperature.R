@@ -254,37 +254,7 @@ portdover.mod <- cbind(portdover.mod, portdover.mod$V2 + portdover.mod$V3)
 colnames(portdover.mod) <- c("weeks", "temperature.avg", "temperature.me",
                           "max", "min", "lower.CI", "upper.CI")
 
-write.csv(portdover.mod, "water temperature clean/portdover_model.csv")
-
-
-
-
-
-
-
-## Notes for the for loops
-
-subset <- data.frame(M.weeklyWater[,1])
-subset <- cbind(subset, M.weeklyWater[,1+52*1])
-subset <- cbind(subset, M.weeklyWater[,1+52*2])
-subset
-
-confidence_level <- 0.95
-standard_error <- sd(subset[1,]) / sqrt(3)
-week.me[y,i] <- qnorm((1 - confidence_level) / 2) * standard_error
-
-qnorm((1 - confidence_level) / 2) * standard_error
-
-qnorm(0.05/2)
-qnorm((1 - 0.95)/2)
-
-M.weeklyWater[,52] # j = 0
-M.weeklyWater[,52 + 52*(1)] # j = 1
-M.weeklyWater[,52 + 52*(2)] # j = 2
-M.weeklyWater[,52 + 52*(25)] # j = 3
-
-
-
+write.csv(portdover.mod, "weekly modelled water temperature/portdover_model.csv")
 
 
 
