@@ -44,7 +44,7 @@ library(pwr)
 asian.carp <- read.csv("asian carp final.csv")
 asian.carp$Condition <- as.factor(asian.carp$Condition)
 
-Black <- read.csv("eddie_carp_new.csv")
+Black <- read.csv("black carp final.csv")
 Black$condition <- as.factor(Black$condition)
 
 ## Separate by species
