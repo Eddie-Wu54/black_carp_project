@@ -110,45 +110,4 @@ write.csv(results, "water temperature black carp.csv")
 
 
 
-## Some working codes
-
-temp.loc <- as.data.frame(M.weeklyWater[1,])
-temp.loc[,"Week"] <- c(1:52) # add week number
-colnames(temp.loc) <- c("Temp", "Week")
-View(temp.loc)
-
-# Calculate the 20-year average temperature for each week
-weekly_avg_data <- temp.loc %>%
-  group_by(Week) %>%
-  summarize(AvgValue = mean(Temp, na.rm = TRUE))
-
-# Import the template for 52 weeks
-template <- read.csv("water_week_template.csv")
-weekly_avg_data <- cbind(template, weekly_avg_data[,"AvgValue"])
-
-# Get the monthly maximum and minimum
-monthly_data <- as.data.frame(matrix(NA, 12, 3))
-colnames(monthly_data) <- c("month", "max", "min")
-
-for (i in 1:12) { # i indicates month number
-  monthly_data[i,"month"] <- i
-  
-  # subset the specific months (those towards the start/end of each month were
-  # counted in both months)
-  sub <- weekly_avg_data[weekly_avg_data$monthstart == i | weekly_avg_data$monthend == i,]
-  monthly_data[i,"max"] <- max(sub$AvgValue)
-  monthly_data[i,"min"] <- min(sub$AvgValue)
-}
-
-# Get the BIO variables (BIO1 and BIO11)
-prec <- c(0,0,0,0,0,0,0,0,0,0,0,0) # the precipitation values does not matter
-bio <- biovars(prec, tmin = monthly_data$min, tmax = monthly_data$max)
-
-results[,"annual temp"]
-bio[1]
-
-
-
-
-
 
