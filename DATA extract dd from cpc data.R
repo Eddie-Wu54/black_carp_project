@@ -121,6 +121,7 @@ get_below8_3days <- function(temp){
 }
 
 
+
 #### Download the 1979 file to get the spatial points ####
 tmin.1979 <- brick("cpc/tmin.1979.nc", varname = "tmin")
 tmin.1979 <- rotate(tmin.1979)
