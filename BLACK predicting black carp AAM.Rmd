@@ -52,7 +52,7 @@ library(car)
 library(dplyr)
 
 ## Import data
-Black <- read.csv("eddie_carp_new.csv")
+Black <- read.csv("black_carp_final.csv")
 Black$condition <- as.factor(Black$condition)
 
 # Clean data

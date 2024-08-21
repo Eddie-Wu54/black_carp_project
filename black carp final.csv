@@ -1,4 +1,4 @@
-location,location_details,condition,habitat,data source,china,sex,spatial code 250,spatial code 500,spatial code 550,spatial code 600,lat one,AAM,latitude,longitude,AnnualTemp,WarmTemp,ColdTemp,WaterTemp,WaterCold,average_gdd_0,average_gdd_5,average_gdd_10,WaterTest,below5,below8,below5_3days,below8_3days
+location,location_details,condition,habitat,data source,china_m,sex,spatial code 250,spatial code 500,spatial code 550,spatial code 600,lat one,AAM,latitude,longitude,AnnualTemp,WarmTemp,ColdTemp,WaterTemp,WaterCold,average_gdd_0,average_gdd_5,average_gdd_10,WaterTest,below5,below8,below5_3days,below8_3days
 Amur river,river midpoint,natural,river,old,y,na,A,A,A,A,R,7.75,53.2024,124.9597,-3.1,17,-25.4,6.392147554,0.100097958,2371.939045,1512.383779,820.7753762,6.193178215,207,218,203,216
 Biliuhe Reservior,specific,artificial,ponds,new,y,na,B,B,B,B,L,6,39.8511,122.5169,8.9,22.5,-6.4,12.51674861,1.555986494,4176.41385,,,,133,151,123,147
 Central China,geo center,artificial,ponds,old,y,na,C,C,C,C,H,6,32.3309,116.3841,15.9,27.3,3.8,15.55409756,4.672919869,5977.682869,4301.569521,2905.05659,15.53496989,41,75,31,70
@@ -28,6 +28,6 @@ Shixing County (Guangdong),geo center,artificial,ponds,new,y,female,P,C,C,C,B,4.
 South Ukraine,geo center,artificial,ponds,old,n,male,Q,J,G,G,P,9,47.3188,33.6678,9.3,21.3,-2.5,12.09969548,1.435543786,4134.948752,2762.068417,1679.613034,11.99748777,131,151,36,132
 South Ukraine,geo center,artificial,ponds,old,n,female,Q,J,G,G,P,11,47.3188,33.6678,9.3,21.3,-2.5,12.09969548,1.435543786,4134.948752,2762.068417,1679.613034,11.99748777,131,151,36,132
 Taihu Lake,specific,natural,lake,new,y,na,R,C,C,C,G,6,31.2236,120.2544,15.8,26.2,5.1,16.07436957,5.096994772,6157.955277,4437.038388,2987.65441,15.77152028,32,71,21,53
-Taiwan,geo center,natural,na,old,y,male,S,K,H,H,A,4,23.8197,121.1133,12.6,15.8,8.4,12.47856669,7.699818665,6210.909721,4389.175585,2611.228236,12.44481728,0,1,1,17
-Taiwan,geo center,natural,na,old,y,female,S,K,H,H,A,5,23.8197,121.1133,12.6,15.8,8.4,12.47856669,7.699818665,6210.909721,4389.175585,2611.228236,12.44481728,0,1,1,17
+Taiwan,geo center,natural,na,old,n,male,S,K,H,H,A,4,23.8197,121.1133,12.6,15.8,8.4,12.47856669,7.699818665,6210.909721,4389.175585,2611.228236,12.44481728,0,1,1,17
+Taiwan,geo center,natural,na,old,n,female,S,K,H,H,A,5,23.8197,121.1133,12.6,15.8,8.4,12.47856669,7.699818665,6210.909721,4389.175585,2611.228236,12.44481728,0,1,1,17
 Turkmenistan,Karamet-Niyaz,artificial,ponds,old,n,female,T,L,I,I,K,7.5,37.7505,64.5666,16.1,27.8,4.2,20.05832043,6.883532037,6485.790823,4644.9403,3283.843442,19.843954,23,53,21,36
