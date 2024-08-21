@@ -1,5 +1,11 @@
+#' This script is used to:
+#' 
+#' 1. download the three temperature metrics from worldclim database for each location.
+
+
 library(sp)
 library(raster)
+
 
 # Import data "location_no_temps.csv"
 location <- read.csv("location_no_temps.csv")
