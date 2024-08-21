@@ -1,4 +1,8 @@
-#' This script is used to calculate the coordinates of geo centers.
+#' This script is used to:
+#' 
+#' calculate the coordinates of geographical centers for the 8 new locations.
+
+
 
 ## Import data (newly-added locations)
 
@@ -7,6 +11,7 @@ new.loc <- read.csv("new location data.csv")
 # Convert all lat/longs to radians
 new.loc[,2:9] <- (new.loc[,2:9])*(pi/180)
 View(new.loc)
+
 
 
 #### Calculate X, Y and Z for each location ####
