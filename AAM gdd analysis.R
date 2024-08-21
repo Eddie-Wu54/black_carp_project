@@ -9,7 +9,7 @@ library(dplyr)
 #### Import data ####
 
 # AAM data for black carp
-carp <- read.csv("eddie_carp_new.csv")
+carp <- read.csv("black carp final.csv")
 
 # Seperate by sex
 carp.f <- carp %>% filter(!row_number() == 5) %>% 
@@ -18,6 +18,8 @@ carp.f <- carp %>% filter(!row_number() == 5) %>%
 carp.m <- carp %>% filter(!row_number() == 5) %>% 
   filter(sex != "female")
 # here we still keep the SU data point
+
+
 
 
 #### Relationship between growing degree day base 0 and AAM ####
@@ -74,6 +76,8 @@ ggplot(carp.m, mapping = aes(average_gdd_5, log(AAM)))+
   labs(x = "Growing degree day base 5", y = "Age at maturity",
        title = "Male, Base 5")+
   theme_classic(base_size = 16)
+
+
 
 
 #### Relationship between growing degree day base 10 and AAM ####
